@@ -151,6 +151,11 @@ async function createMeasurement(req: VercelRequest, res: VercelResponse) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
+    // Manager can create measurements
+    if (user.role === 'manager' && req.method === 'POST') {
+      // Allow managers to create
+    }
+
     const data = req.body;
 
     // Validate measurement

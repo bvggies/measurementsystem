@@ -14,6 +14,8 @@ import OrdersList from './pages/OrdersList';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
 import AdminPanel from './pages/AdminPanel';
+import ShareableForm from './pages/ShareableForm';
+import ActivityLogs from './pages/ActivityLogs';
 import Layout from './components/Layout';
 
 // Protected Route Component
@@ -48,6 +50,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/form/:token" element={<ShareableForm />} />
       
       <Route
         path="/"
@@ -68,6 +71,14 @@ function AppRoutes() {
         <Route path="orders" element={<OrdersList />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="settings" element={<Settings />} />
+        <Route
+          path="activity-logs"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="admin"
           element={

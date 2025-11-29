@@ -115,7 +115,7 @@ const ImportPage: React.FC = () => {
           <button
             onClick={handleUpload}
             disabled={!file || loading}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className="px-6 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
           >
             {loading ? 'Processing...' : 'Upload & Preview'}
           </button>

@@ -36,12 +36,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       params.push(user.userId);
       paramIndex++;
     }
+    // Managers and admins can see all data
 
     // Total customers
     const customersQuery = user.role === 'tailor'
       ? `SELECT COUNT(DISTINCT m.customer_id) as count FROM measurements m WHERE m.created_by = $1`
       : `SELECT COUNT(*) as count FROM customers`;
-    const customersResult = await query<{ count: string }>(customersQuery, user.role === 'tailor' ? [user.userId] : []);
+    const customersParams = user.role === 'tailor' ? [user.userId] : [];
+    const customersResult = await query<{ count: string }>(customersQuery, customersParams);
     const totalCustomers = parseInt(customersResult[0].count, 10);
 
     // Total measurements
@@ -57,8 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Pending fittings
     const fittingsParams = user.role === 'tailor' ? [user.userId] : [];
-    const fittingsWhere = user.role === 'tailor' ? 'WHERE f.tailor_id = $1' : '';
-    const fittingsQuery = `SELECT COUNT(*) as count FROM fittings f ${fittingsWhere} AND f.status = 'scheduled'`;
+    const fittingsWhere = user.role === 'tailor' ? 'WHERE f.tailor_id = $1 AND' : 'WHERE';
+    const fittingsQuery = `SELECT COUNT(*) as count FROM fittings f ${fittingsWhere} f.status = 'scheduled'`;
     const fittingsResult = await query<{ count: string }>(fittingsQuery, fittingsParams);
     const pendingFittings = parseInt(fittingsResult[0].count, 10);
 

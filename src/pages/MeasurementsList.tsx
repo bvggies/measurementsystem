@@ -68,7 +68,7 @@ const MeasurementsList: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Measurements</h1>
         <Link
           to="/measurements/new"
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+          className="px-4 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition"
         >
           + New Measurement
         </Link>
@@ -92,7 +92,7 @@ const MeasurementsList: React.FC = () => {
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              className="px-6 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90"
             >
               Search
             </button>
@@ -187,7 +187,7 @@ const MeasurementsList: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
                           to={`/measurements/${measurement.id}`}
-                          className="text-primary-600 hover:text-primary-800"
+                          className="text-primary-navy hover:text-opacity-80"
                         >
                           View
                         </Link>

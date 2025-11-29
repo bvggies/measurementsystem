@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const user = requireRole(['admin'])(req);
+    const user = requireRole(['admin', 'manager'])(req);
 
     const { importId, rows, columnMapping, fileName, defaultUnit = 'cm' } = req.body;
 

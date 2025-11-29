@@ -37,28 +37,28 @@ const Dashboard: React.FC = () => {
       title: 'Total Customers',
       value: stats?.totalCustomers || 0,
       icon: '👥',
-      color: 'bg-blue-500',
+      color: 'bg-primary-navy',
       link: '/customers',
     },
     {
       title: 'Total Measurements',
       value: stats?.totalMeasurements || 0,
       icon: '📏',
-      color: 'bg-green-500',
+      color: 'bg-emerald',
       link: '/measurements',
     },
     {
       title: 'New Entries (30d)',
       value: stats?.newEntries || 0,
       icon: '✨',
-      color: 'bg-purple-500',
+      color: 'bg-primary-gold',
       link: '/measurements',
     },
     {
       title: 'Pending Fittings',
       value: stats?.pendingFittings || 0,
       icon: '📅',
-      color: 'bg-orange-500',
+      color: 'bg-steel',
       link: '/calendar',
     },
   ];
@@ -72,8 +72,8 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy"></div>
       </div>
     );
   }

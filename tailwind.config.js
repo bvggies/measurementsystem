@@ -7,17 +7,19 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          DEFAULT: '#0D2136', // Royal Navy
+          navy: '#0D2136',
+          gold: '#D4A643', // Tailor Gold
+          gray: '#586577', // Steel Gray
+          white: '#FAFAFA', // Soft White
+          success: '#00A68C', // Emerald Green
+          error: '#E43F52', // Crimson Edge
         },
+        navy: '#0D2136',
+        gold: '#D4A643',
+        steel: '#586577',
+        emerald: '#00A68C',
+        crimson: '#E43F52',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in',

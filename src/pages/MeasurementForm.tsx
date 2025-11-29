@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { validateMeasurement, ValidationError } from '../utils/validation';
 import { convertMeasurementUnits } from '../utils/unitConversion';
+import PrintMeasurement from '../components/PrintMeasurement';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MeasurementData {
   client_name: string;
@@ -30,7 +32,9 @@ interface MeasurementData {
 const MeasurementForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isEdit = !!id;
+  const [measurementData, setMeasurementData] = useState<any>(null);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ValidationError[]>([]);
@@ -66,6 +70,7 @@ const MeasurementForm: React.FC = () => {
     try {
       const response = await axios.get(`/api/measurements/${id}`);
       const m = response.data;
+      setMeasurementData(m);
       setData({
         client_name: m.customer_name || '',
         client_phone: m.customer_phone || '',
@@ -229,7 +234,7 @@ const MeasurementForm: React.FC = () => {
                 type="button"
                 onClick={() => handleUnitChange('cm')}
                 className={`px-4 py-2 rounded-lg ${
-                  data.units === 'cm' ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'
+                  data.units === 'cm' ? 'bg-primary-navy text-white' : 'bg-gray-200 text-steel'
                 }`}
               >
                 Centimeters
@@ -238,7 +243,7 @@ const MeasurementForm: React.FC = () => {
                 type="button"
                 onClick={() => handleUnitChange('in')}
                 className={`px-4 py-2 rounded-lg ${
-                  data.units === 'in' ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'
+                  data.units === 'in' ? 'bg-primary-navy text-white' : 'bg-gray-200 text-steel'
                 }`}
               >
                 Inches
@@ -335,17 +340,29 @@ const MeasurementForm: React.FC = () => {
           >
             Cancel
           </button>
+          {isEdit && measurementData && (user?.role === 'admin' || user?.role === 'manager') && (
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-6 py-3 bg-primary-gold text-white rounded-lg hover:bg-opacity-90"
+            >
+              🖨️ Print
+            </button>
+          )}
           <motion.button
             type="submit"
             disabled={saving}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className="px-6 py-3 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
           >
             {saving ? 'Saving...' : isEdit ? 'Update' : 'Create'}
           </motion.button>
         </div>
       </form>
+
+      {/* Print Component */}
+      {isEdit && measurementData && <PrintMeasurement measurement={measurementData} />}
     </div>
   );
 };

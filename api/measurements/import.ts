@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const user = requireRole(['admin'])(req);
+    const user = requireRole(['admin', 'manager'])(req);
 
     // Handle file upload - for Vercel, expect base64 or buffer in body
     // In production, consider using a file upload service or Vercel Blob Storage

@@ -81,6 +81,11 @@ async function updateMeasurement(req: VercelRequest, res: VercelResponse) {
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
+    // Manager can update measurements
+    if (user.role === 'manager' && req.method === 'PUT') {
+      // Allow managers to update
+    }
+
     // Get existing measurement
     const existing = await query('SELECT * FROM measurements WHERE id = $1', [id]);
     if (existing.length === 0) {

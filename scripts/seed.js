@@ -3,14 +3,14 @@
  * Run with: npm run seed
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { parse } from 'papaparse';
-import { Pool } from 'pg';
+const fs = require('fs');
+const path = require('path');
+const { parse } = require('papaparse');
+const { Pool } = require('pg');
+
 // Load environment variables if dotenv is available
 try {
-  const dotenv = require('dotenv');
-  dotenv.config();
+  require('dotenv').config();
 } catch (e) {
   // dotenv not available, use environment variables directly
 }
@@ -22,11 +22,7 @@ const pool = new Pool({
   },
 });
 
-interface CSVRow {
-  [key: string]: string | undefined;
-}
-
-const parseNumeric = (value: string | undefined): number | null => {
+const parseNumeric = (value) => {
   if (!value || value.trim() === '' || value === '*') return null;
   // Handle ranges like "9/24" - take the first value
   const numStr = value.split('/')[0].trim();
@@ -34,7 +30,7 @@ const parseNumeric = (value: string | undefined): number | null => {
   return isNaN(parsed) ? null : parsed;
 };
 
-const normalizePhone = (phone: string | undefined): string | null => {
+const normalizePhone = (phone) => {
   if (!phone || phone.trim() === '' || phone === '*') return null;
   return phone.replace(/[^\d+]/g, '') || null;
 };
@@ -48,7 +44,7 @@ async function seed() {
     const csvContent = fs.readFileSync(csvPath, 'utf-8');
 
     // Parse CSV
-    const parseResult = parse<CSVRow>(csvContent, {
+    const parseResult = parse(csvContent, {
       header: true,
       skipEmptyLines: true,
     });
@@ -56,7 +52,7 @@ async function seed() {
     console.log(`Parsed ${parseResult.data.length} rows`);
 
     // Get or create default user (admin)
-    let adminUserId: string;
+    let adminUserId;
     const userResult = await pool.query('SELECT id FROM users WHERE email = $1', ['admin@example.com']);
     
     if (userResult.rows.length === 0) {
@@ -97,7 +93,7 @@ async function seed() {
         );
 
         // Find or create customer
-        let customerId: string | null = null;
+        let customerId = null;
         if (clientPhone) {
           const existingCustomer = await pool.query(
             'SELECT id FROM customers WHERE phone = $1 LIMIT 1',
@@ -160,7 +156,7 @@ async function seed() {
         if (successCount % 100 === 0) {
           console.log(`Processed ${successCount} rows...`);
         }
-      } catch (error: any) {
+      } catch (error) {
         errorCount++;
         console.error(`Error processing row:`, error.message);
       }
