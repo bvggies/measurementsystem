@@ -1,0 +1,5 @@
+Entry Id,Entry Date,Date Updated,Created By,Client Name,Client Phone,Client Email,Branch,Units,Across Back,Chest,Sleeve Length,Around Arm,Neck,Top Length,Wrist,Trouser Waist,Trouser Thigh,Trouser Knee,Trouser Length,Trouser Bars,Additional Info
+ENT-001,2024-01-01T10:00:00Z,2024-01-01T10:00:00Z,Admin,John Doe,+1234567890,john@example.com,Downtown,cm,40,100,60,30,38,75,15,34,60,40,100,2,Customer prefers slim fit
+ENT-002,2024-01-02T11:00:00Z,2024-01-02T11:00:00Z,Admin,Jane Smith,+1987654321,jane@example.com,Uptown,cm,38,95,58,28,36,72,14,32,58,38,95,2,Regular fit preferred
+ENT-003,2024-01-03T12:00:00Z,2024-01-03T12:00:00Z,Admin,Bob Johnson,+1555555555,bob@example.com,Downtown,in,16,40,24,12,15,30,6,14,24,16,40,1,Standard measurements
+

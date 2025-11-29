@@ -1,0 +1,354 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import axios from '../utils/api';
+import { validateMeasurement, ValidationError } from '../utils/validation';
+import { convertMeasurementUnits } from '../utils/unitConversion';
+
+interface MeasurementData {
+  client_name: string;
+  client_phone: string;
+  client_email: string;
+  client_address: string;
+  units: 'cm' | 'in';
+  across_back: number | null;
+  chest: number | null;
+  sleeve_length: number | null;
+  around_arm: number | null;
+  neck: number | null;
+  top_length: number | null;
+  wrist: number | null;
+  trouser_waist: number | null;
+  trouser_thigh: number | null;
+  trouser_knee: number | null;
+  trouser_length: number | null;
+  trouser_bars: number | null;
+  additional_info: string;
+  branch: string;
+}
+
+const MeasurementForm: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isEdit = !!id;
+  const [loading, setLoading] = useState(isEdit);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [data, setData] = useState<MeasurementData>({
+    client_name: '',
+    client_phone: '',
+    client_email: '',
+    client_address: '',
+    units: 'cm',
+    across_back: null,
+    chest: null,
+    sleeve_length: null,
+    around_arm: null,
+    neck: null,
+    top_length: null,
+    wrist: null,
+    trouser_waist: null,
+    trouser_thigh: null,
+    trouser_knee: null,
+    trouser_length: null,
+    trouser_bars: null,
+    additional_info: '',
+    branch: '',
+  });
+
+  useEffect(() => {
+    if (isEdit) {
+      fetchMeasurement();
+    }
+  }, [id]);
+
+  const fetchMeasurement = async () => {
+    try {
+      const response = await axios.get(`/api/measurements/${id}`);
+      const m = response.data;
+      setData({
+        client_name: m.customer_name || '',
+        client_phone: m.customer_phone || '',
+        client_email: m.customer_email || '',
+        client_address: m.customer_address || '',
+        units: m.units || 'cm',
+        across_back: m.across_back,
+        chest: m.chest,
+        sleeve_length: m.sleeve_length,
+        around_arm: m.around_arm,
+        neck: m.neck,
+        top_length: m.top_length,
+        wrist: m.wrist,
+        trouser_waist: m.trouser_waist,
+        trouser_thigh: m.trouser_thigh,
+        trouser_knee: m.trouser_knee,
+        trouser_length: m.trouser_length,
+        trouser_bars: m.trouser_bars,
+        additional_info: m.additional_info || '',
+        branch: m.branch || '',
+      });
+    } catch (error) {
+      console.error('Failed to fetch measurement:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnitChange = (newUnit: 'cm' | 'in') => {
+    if (newUnit === data.units) return;
+
+    const converted = convertMeasurementUnits(data, data.units, newUnit);
+    setData({ ...converted, units: newUnit });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
+
+    const validation = validateMeasurement(data, data.units);
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (isEdit) {
+        await axios.put(`/api/measurements/${id}`, data);
+      } else {
+        await axios.post('/api/measurements', data);
+      }
+      navigate('/measurements');
+    } catch (error: any) {
+      setErrors([{ field: 'general', message: error.response?.data?.error || 'Failed to save' }]);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateField = (field: keyof MeasurementData, value: any) => {
+    setData({ ...data, [field]: value });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isEdit ? 'Edit Measurement' : 'New Measurement'}
+        </h1>
+      </motion.div>
+
+      {errors.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="p-4 bg-red-50 border border-red-200 rounded-lg"
+        >
+          <ul className="list-disc list-inside text-red-700">
+            {errors.map((err, idx) => (
+              <li key={idx}>{err.message}</li>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Client Information */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-aos="fade-up"
+          className="bg-white rounded-xl shadow-md p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Client Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+              <input
+                type="text"
+                value={data.client_name}
+                onChange={(e) => updateField('client_name', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+              <input
+                type="text"
+                value={data.client_phone}
+                onChange={(e) => updateField('client_phone', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={data.client_email}
+                onChange={(e) => updateField('client_email', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+              <input
+                type="text"
+                value={data.client_address}
+                onChange={(e) => updateField('client_address', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Units Toggle */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          data-aos="fade-up"
+          className="bg-white rounded-xl shadow-md p-6"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Units</h2>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleUnitChange('cm')}
+                className={`px-4 py-2 rounded-lg ${
+                  data.units === 'cm' ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                Centimeters
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUnitChange('in')}
+                className={`px-4 py-2 rounded-lg ${
+                  data.units === 'in' ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-700'
+                }`}
+              >
+                Inches
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Top Measurements */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-aos="fade-up"
+          className="bg-white rounded-xl shadow-md p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Top Measurements</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { key: 'across_back', label: 'Across Back' },
+              { key: 'chest', label: 'Chest' },
+              { key: 'sleeve_length', label: 'Sleeve Length' },
+              { key: 'around_arm', label: 'Around Arm' },
+              { key: 'neck', label: 'Neck' },
+              { key: 'top_length', label: 'Top Length' },
+              { key: 'wrist', label: 'Wrist' },
+            ].map((field) => (
+              <div key={field.key}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={data[field.key as keyof MeasurementData] || ''}
+                  onChange={(e) => updateField(field.key as keyof MeasurementData, e.target.value ? parseFloat(e.target.value) : null)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Trouser Measurements */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-aos="fade-up"
+          className="bg-white rounded-xl shadow-md p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Trouser Measurements</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { key: 'trouser_waist', label: 'Waist' },
+              { key: 'trouser_thigh', label: 'Thigh' },
+              { key: 'trouser_knee', label: 'Knee' },
+              { key: 'trouser_length', label: 'Trouser Length' },
+              { key: 'trouser_bars', label: 'Bars' },
+            ].map((field) => (
+              <div key={field.key}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={data[field.key as keyof MeasurementData] || ''}
+                  onChange={(e) => updateField(field.key as keyof MeasurementData, e.target.value ? parseFloat(e.target.value) : null)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Additional Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-aos="fade-up"
+          className="bg-white rounded-xl shadow-md p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Additional Information</h2>
+          <textarea
+            value={data.additional_info}
+            onChange={(e) => updateField('additional_info', e.target.value)}
+            rows={4}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            placeholder="Any additional notes or preferences..."
+          />
+        </motion.div>
+
+        {/* Actions */}
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/measurements')}
+            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <motion.button
+            type="submit"
+            disabled={saving}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : isEdit ? 'Update' : 'Create'}
+          </motion.button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default MeasurementForm;
+
