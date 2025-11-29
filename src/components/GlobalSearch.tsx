@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from '../utils/api';
@@ -30,15 +30,7 @@ const GlobalSearch: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (query.length >= 2) {
-      performSearch();
-    } else {
-      setResults([]);
-    }
-  }, [query]);
-
-  const performSearch = async () => {
+  const performSearch = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`/api/search?q=${encodeURIComponent(query)}`);
@@ -50,7 +42,15 @@ const GlobalSearch: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query]);
+
+  useEffect(() => {
+    if (query.length >= 2) {
+      performSearch();
+    } else {
+      setResults([]);
+    }
+  }, [query, performSearch]);
 
   const handleResultClick = (result: SearchResult) => {
     navigate(result.link);

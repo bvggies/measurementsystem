@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
@@ -26,11 +26,7 @@ const MeasurementsList: React.FC = () => {
     tailor: '',
   });
 
-  useEffect(() => {
-    fetchMeasurements();
-  }, [page, search, filters]);
-
-  const fetchMeasurements = async () => {
+  const fetchMeasurements = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -50,7 +46,11 @@ const MeasurementsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, search, filters]);
+
+  useEffect(() => {
+    fetchMeasurements();
+  }, [fetchMeasurements]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

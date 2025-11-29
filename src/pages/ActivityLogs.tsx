@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
@@ -30,11 +30,7 @@ const ActivityLogs: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchLogs();
-  }, [page, filters]);
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -55,7 +51,11 @@ const ActivityLogs: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const getActionColor = (action: string) => {
     switch (action.toLowerCase()) {

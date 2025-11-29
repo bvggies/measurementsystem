@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
-import { useAuth } from '../contexts/AuthContext';
 
 interface ShareableToken {
   token: string;

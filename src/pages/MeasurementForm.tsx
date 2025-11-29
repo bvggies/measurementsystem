@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
@@ -60,13 +60,7 @@ const MeasurementForm: React.FC = () => {
     branch: '',
   });
 
-  useEffect(() => {
-    if (isEdit) {
-      fetchMeasurement();
-    }
-  }, [id]);
-
-  const fetchMeasurement = async () => {
+  const fetchMeasurement = useCallback(async () => {
     try {
       const response = await axios.get(`/api/measurements/${id}`);
       const m = response.data;
@@ -97,7 +91,13 @@ const MeasurementForm: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEdit) {
+      fetchMeasurement();
+    }
+  }, [isEdit, id, fetchMeasurement]);
 
   const handleUnitChange = (newUnit: 'cm' | 'in') => {
     if (newUnit === data.units) return;
