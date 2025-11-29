@@ -21,9 +21,23 @@ const Login: React.FC = () => {
       navigate('/dashboard');
     } catch (err: any) {
       // Ensure we always display a string message
-      const errorMessage = err?.message || err?.toString() || String(err) || 'Login failed';
+      let errorMessage = 'Login failed';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err?.message) {
+        errorMessage = String(err.message);
+      } else if (err?.toString && typeof err.toString === 'function') {
+        errorMessage = err.toString();
+      } else {
+        errorMessage = JSON.stringify(err);
+      }
+      
       setError(errorMessage);
       console.error('Login error:', err);
+      console.error('Error message:', errorMessage);
     } finally {
       setLoading(false);
     }

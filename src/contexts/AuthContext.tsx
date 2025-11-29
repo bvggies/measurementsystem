@@ -34,21 +34,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     // Check for stored token on mount
-    try {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
+    const checkStoredAuth = () => {
+      try {
+        // Check if we're in a browser context and localStorage is available
+        if (typeof window === 'undefined') {
+          setLoading(false);
+          return;
+        }
 
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        // Test if localStorage is accessible
+        const testKey = '__localStorage_test__';
+        try {
+          localStorage.setItem(testKey, 'test');
+          localStorage.removeItem(testKey);
+        } catch (e) {
+          // localStorage is not available (e.g., in iframe with third-party context, private browsing)
+          console.warn('localStorage is not accessible:', e);
+          setLoading(false);
+          return;
+        }
+
+        const storedToken = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+
+        if (storedToken && storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        }
+      } catch (error) {
+        console.error('Error accessing localStorage:', error);
+        // localStorage might not be available
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error accessing localStorage:', error);
-      // localStorage might not be available (e.g., in iframe, private browsing)
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    checkStoredAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -104,7 +126,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         request: error?.request,
       });
       
-      throw new Error(errorMessage);
+      // Create a new Error with the message string to ensure it's always a string
+      const loginError = new Error(errorMessage);
+      // Preserve original error for debugging
+      (loginError as any).originalError = error;
+      throw loginError;
     }
   };
 

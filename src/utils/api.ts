@@ -18,9 +18,11 @@ if (API_URL) {
 axios.interceptors.request.use(
   (config) => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
     } catch (error) {
       // localStorage not available, continue without token
@@ -39,12 +41,14 @@ axios.interceptors.response.use(
     if (error.response?.status === 401) {
       // Unauthorized - clear auth and redirect to login
       try {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       } catch (e) {
         // localStorage not available
       }
-      if (window.location.pathname !== '/login') {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }
