@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { validateMeasurement, ValidationError } from '../utils/validation';
@@ -27,7 +27,6 @@ interface MeasurementData {
 
 const ShareableForm: React.FC = () => {
   const { token } = useParams<{ token: string }>();
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [success, setSuccess] = useState(false);

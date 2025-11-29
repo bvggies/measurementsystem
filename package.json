@@ -29,6 +29,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/aos": "^3.0.7",
     "@types/bcryptjs": "^2.4.6",
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.5",
@@ -70,4 +71,3 @@
     ]
   }
 }
-

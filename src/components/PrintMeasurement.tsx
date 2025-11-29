@@ -5,10 +5,6 @@ interface PrintMeasurementProps {
 }
 
 const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <>
       <div className="hidden print:block">

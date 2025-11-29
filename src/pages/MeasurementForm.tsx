@@ -103,7 +103,7 @@ const MeasurementForm: React.FC = () => {
     if (newUnit === data.units) return;
 
     const converted = convertMeasurementUnits(data, data.units, newUnit);
-    setData({ ...converted, units: newUnit });
+    setData({ ...data, ...converted, units: newUnit } as MeasurementData);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

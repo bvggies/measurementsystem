@@ -2,7 +2,7 @@
  * CSV/Excel import parsing utilities
  */
 
-import Papa from 'papaparse';
+import Papa, { ParseResult } from 'papaparse';
 import * as XLSX from 'xlsx';
 import { parseNumeric, normalizePhone, validateMeasurement, ValidationResult } from './validation';
 
@@ -111,7 +111,7 @@ export const parseCSV = async (file: File | Buffer): Promise<{ data: any[]; head
       header: true,
       skipEmptyLines: true,
       transformHeader: (header) => header.trim(),
-      complete: (results) => {
+      complete: (results: ParseResult<any>) => {
         if (results.errors.length > 0 && results.data.length === 0) {
           reject(new Error('Failed to parse CSV: ' + results.errors[0].message));
           return;
@@ -121,7 +121,7 @@ export const parseCSV = async (file: File | Buffer): Promise<{ data: any[]; head
           headers: results.meta.fields || [],
         });
       },
-      error: (error) => {
+      error: (error: Error) => {
         reject(error);
       },
     });
@@ -132,6 +132,7 @@ export const parseCSV = async (file: File | Buffer): Promise<{ data: any[]; head
  * Parse Excel file
  */
 export const parseExcel = async (file: File | Buffer): Promise<{ data: any[]; headers: string[] }> => {
+  const isBuffer = Buffer.isBuffer(file);
   const workbook = isBuffer ? XLSX.read(file, { type: 'buffer' }) : XLSX.read(file, { type: 'array' });
   const firstSheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[firstSheetName];

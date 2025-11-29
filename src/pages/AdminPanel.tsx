@@ -11,7 +11,6 @@ interface ShareableToken {
 }
 
 const AdminPanel: React.FC = () => {
-  const { user } = useAuth();
   const [tokens, setTokens] = useState<ShareableToken[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);

@@ -18,7 +18,6 @@ interface VercelResponse {
 
 import { query } from '../src/utils/db';
 import { requireRole } from '../src/utils/auth';
-import { v4 as uuidv4 } from 'uuid';
 
 // Generate random token
 const generateToken = () => {
