@@ -1,14 +1,14 @@
 /**
  * POST /api/auth/login
  * Authenticate user and return JWT token
+ * JavaScript version for better Vercel compatibility
  */
 
-import bcrypt from 'bcryptjs';
-import { query } from '../utils/db';
-import { generateToken } from '../utils/auth';
-import type { VercelRequest, VercelResponse } from '../types';
+const bcrypt = require('bcryptjs');
+const { query } = require('../utils/db');
+const { generateToken } = require('../utils/auth');
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -21,13 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Find user by email
-    const users = await query<{
-      id: string;
-      email: string;
-      name: string;
-      role: string;
-      password_hash: string;
-    }>(
+    const users = await query(
       'SELECT id, email, name, role, password_hash FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
@@ -48,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role as 'admin' | 'manager' | 'tailor' | 'customer',
+      role: user.role,
     });
 
     return res.status(200).json({
@@ -60,10 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         role: user.role,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error);
     const errorMessage = error?.message || 'Internal server error';
     return res.status(500).json({ error: errorMessage });
   }
-}
+};
 
