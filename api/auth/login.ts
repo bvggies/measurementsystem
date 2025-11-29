@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role as 'admin' | 'tailor' | 'customer',
+      role: user.role as 'admin' | 'manager' | 'tailor' | 'customer',
     });
 
     return res.status(200).json({
@@ -73,7 +73,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    const errorMessage = error?.message || 'Internal server error';
+    return res.status(500).json({ error: errorMessage });
   }
 }
 

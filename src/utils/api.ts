@@ -5,9 +5,14 @@
 import axios from 'axios';
 
 // Configure axios base URL
+// In production (Vercel), API routes are at the same origin, so empty string is fine
+// In development, can use REACT_APP_API_URL if needed
 const API_URL = process.env.REACT_APP_API_URL || '';
 
-axios.defaults.baseURL = API_URL;
+if (API_URL) {
+  axios.defaults.baseURL = API_URL;
+}
+// If no API_URL, axios will use relative paths (same origin)
 
 // Add request interceptor to include auth token
 axios.interceptors.request.use(

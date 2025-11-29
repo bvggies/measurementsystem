@@ -20,7 +20,10 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      // Ensure we always display a string message
+      const errorMessage = err?.message || err?.toString() || String(err) || 'Login failed';
+      setError(errorMessage);
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }

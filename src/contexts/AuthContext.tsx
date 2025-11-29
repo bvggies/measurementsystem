@@ -56,7 +56,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem('user', JSON.stringify(newUser));
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      // Better error handling
+      let errorMessage = 'Login failed';
+      
+      if (error.response) {
+        // Server responded with error
+        errorMessage = error.response.data?.error || error.response.data?.message || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Request made but no response
+        errorMessage = 'Unable to connect to server. Please check your connection.';
+      } else {
+        // Something else happened
+        errorMessage = error.message || 'An unexpected error occurred';
+      }
+      
+      throw new Error(errorMessage);
     }
   };
 
