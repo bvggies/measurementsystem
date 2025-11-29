@@ -3,21 +3,10 @@
  * Authenticate user and return JWT token
  */
 
-// Vercel serverless function types
-interface VercelRequest {
-  method?: string;
-  body?: any;
-  query?: any;
-  headers?: any;
-}
-
-interface VercelResponse {
-  status: (code: number) => VercelResponse;
-  json: (data: any) => void;
-}
 import bcrypt from 'bcryptjs';
 import { query } from '../../src/utils/db';
 import { generateToken } from '../../src/utils/auth';
+import type { VercelRequest, VercelResponse } from '../types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

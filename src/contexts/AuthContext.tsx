@@ -34,15 +34,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     // Check for stored token on mount
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    try {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      }
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
+      // localStorage might not be available (e.g., in iframe, private browsing)
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -52,23 +58,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       setToken(newToken);
       setUser(newUser);
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      try {
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+        // Continue even if localStorage fails
+      }
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     } catch (error: any) {
       // Better error handling
       let errorMessage = 'Login failed';
       
-      if (error.response) {
+      if (error?.response) {
         // Server responded with error
-        errorMessage = error.response.data?.error || error.response.data?.message || `Server error: ${error.response.status}`;
-      } else if (error.request) {
-        // Request made but no response
-        errorMessage = 'Unable to connect to server. Please check your connection.';
+        const data = error.response.data;
+        if (typeof data === 'string') {
+          errorMessage = data;
+        } else if (data?.error) {
+          errorMessage = String(data.error);
+        } else if (data?.message) {
+          errorMessage = String(data.message);
+        } else {
+          errorMessage = `Server error: ${error.response.status}`;
+        }
+      } else if (error?.request) {
+        // Request made but no response (404, network error, etc.)
+        if (error.code === 'ERR_NETWORK' || error.message?.includes('404')) {
+          errorMessage = 'API endpoint not found. Please check your deployment.';
+        } else {
+          errorMessage = 'Unable to connect to server. Please check your connection.';
+        }
+      } else if (error?.message) {
+        errorMessage = String(error.message);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
       } else {
-        // Something else happened
-        errorMessage = error.message || 'An unexpected error occurred';
+        errorMessage = 'An unexpected error occurred during login.';
       }
+      
+      console.error('Login error details:', {
+        error,
+        message: errorMessage,
+        response: error?.response,
+        request: error?.request,
+      });
       
       throw new Error(errorMessage);
     }
@@ -77,8 +111,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
+    }
     delete axios.defaults.headers.common['Authorization'];
   };
 

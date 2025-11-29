@@ -17,9 +17,13 @@ if (API_URL) {
 // Add request interceptor to include auth token
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      // localStorage not available, continue without token
     }
     return config;
   },
@@ -34,9 +38,15 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Unauthorized - clear auth and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      } catch (e) {
+        // localStorage not available
+      }
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
