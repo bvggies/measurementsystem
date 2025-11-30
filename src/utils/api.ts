@@ -14,7 +14,7 @@ if (API_URL) {
 }
 // If no API_URL, axios will use relative paths (same origin)
 
-// Add request interceptor to include auth token
+// Add request interceptor to include auth token and cache-busting
 axios.interceptors.request.use(
   (config) => {
     try {
@@ -27,6 +27,18 @@ axios.interceptors.request.use(
     } catch (error) {
       // localStorage not available, continue without token
     }
+    
+    // Add cache-busting to API requests
+    if (config.url && config.url.startsWith('/api/')) {
+      const separator = config.url.includes('?') ? '&' : '?';
+      config.url = `${config.url}${separator}_t=${Date.now()}`;
+    }
+    
+    // Ensure API requests are not cached
+    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    config.headers['Pragma'] = 'no-cache';
+    config.headers['Expires'] = '0';
+    
     return config;
   },
   (error) => {
