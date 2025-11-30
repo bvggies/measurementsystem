@@ -138,7 +138,7 @@ const MeasurementForm: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy"></div>
       </div>
     );
   }
@@ -150,7 +150,7 @@ const MeasurementForm: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-primary-navy">
           {isEdit ? 'Edit Measurement' : 'New Measurement'}
         </h1>
       </motion.div>
@@ -159,9 +159,9 @@ const MeasurementForm: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="p-4 bg-red-50 border border-red-200 rounded-lg"
+          className="p-4 bg-crimson bg-opacity-10 border border-crimson rounded-lg"
         >
-          <ul className="list-disc list-inside text-red-700">
+          <ul className="list-disc list-inside text-crimson">
             {errors.map((err, idx) => (
               <li key={idx}>{err.message}</li>
             ))}
@@ -177,44 +177,44 @@ const MeasurementForm: React.FC = () => {
           data-aos="fade-up"
           className="bg-white rounded-xl shadow-md p-6"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Client Information</h2>
+          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b border-steel-light pb-2">Client Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+              <label className="block text-sm font-medium text-steel mb-2">Name *</label>
               <input
                 type="text"
                 value={data.client_name}
                 onChange={(e) => updateField('client_name', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+              <label className="block text-sm font-medium text-steel mb-2">Phone *</label>
               <input
                 type="text"
                 value={data.client_phone}
                 onChange={(e) => updateField('client_phone', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-steel mb-2">Email</label>
               <input
                 type="email"
                 value={data.client_email}
                 onChange={(e) => updateField('client_email', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+              <label className="block text-sm font-medium text-steel mb-2">Address</label>
               <input
                 type="text"
                 value={data.client_address}
                 onChange={(e) => updateField('client_address', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
               />
             </div>
           </div>
@@ -228,13 +228,13 @@ const MeasurementForm: React.FC = () => {
           className="bg-white rounded-xl shadow-md p-6"
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Units</h2>
+            <h2 className="text-xl font-bold text-primary-navy border-b border-steel-light pb-2 flex-1">Units</h2>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => handleUnitChange('cm')}
-                className={`px-4 py-2 rounded-lg ${
-                  data.units === 'cm' ? 'bg-primary-navy text-white' : 'bg-gray-200 text-steel'
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  data.units === 'cm' ? 'bg-primary-navy text-white' : 'bg-soft-white text-steel hover:bg-steel-light'
                 }`}
               >
                 Centimeters
@@ -242,8 +242,8 @@ const MeasurementForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleUnitChange('in')}
-                className={`px-4 py-2 rounded-lg ${
-                  data.units === 'in' ? 'bg-primary-navy text-white' : 'bg-gray-200 text-steel'
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  data.units === 'in' ? 'bg-primary-navy text-white' : 'bg-soft-white text-steel hover:bg-steel-light'
                 }`}
               >
                 Inches
@@ -259,7 +259,7 @@ const MeasurementForm: React.FC = () => {
           data-aos="fade-up"
           className="bg-white rounded-xl shadow-md p-6"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Top Measurements</h2>
+          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b border-steel-light pb-2">Top Measurements</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { key: 'across_back', label: 'Across Back' },
@@ -271,13 +271,13 @@ const MeasurementForm: React.FC = () => {
               { key: 'wrist', label: 'Wrist' },
             ].map((field) => (
               <div key={field.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                <label className="block text-sm font-medium text-steel mb-2">{field.label}</label>
                 <input
                   type="number"
                   step="0.01"
                   value={data[field.key as keyof MeasurementData] || ''}
                   onChange={(e) => updateField(field.key as keyof MeasurementData, e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
                 />
               </div>
             ))}
@@ -291,7 +291,7 @@ const MeasurementForm: React.FC = () => {
           data-aos="fade-up"
           className="bg-white rounded-xl shadow-md p-6"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Trouser Measurements</h2>
+          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b border-steel-light pb-2">Trouser Measurements</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { key: 'trouser_waist', label: 'Waist' },
@@ -301,13 +301,13 @@ const MeasurementForm: React.FC = () => {
               { key: 'trouser_bars', label: 'Bars' },
             ].map((field) => (
               <div key={field.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{field.label}</label>
+                <label className="block text-sm font-medium text-steel mb-2">{field.label}</label>
                 <input
                   type="number"
                   step="0.01"
                   value={data[field.key as keyof MeasurementData] || ''}
                   onChange={(e) => updateField(field.key as keyof MeasurementData, e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
                 />
               </div>
             ))}
@@ -321,12 +321,12 @@ const MeasurementForm: React.FC = () => {
           data-aos="fade-up"
           className="bg-white rounded-xl shadow-md p-6"
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Additional Information</h2>
+          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b border-steel-light pb-2">Additional Information</h2>
           <textarea
             value={data.additional_info}
             onChange={(e) => updateField('additional_info', e.target.value)}
             rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
             placeholder="Any additional notes or preferences..."
           />
         </motion.div>
@@ -336,7 +336,7 @@ const MeasurementForm: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/measurements')}
-            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-6 py-3 border border-steel-light rounded-lg hover:bg-soft-white text-steel transition-colors"
           >
             Cancel
           </button>
