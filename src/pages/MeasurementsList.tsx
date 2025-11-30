@@ -13,6 +13,7 @@ interface Measurement {
   units: string;
   created_at: string;
   created_by_name: string;
+  created_by?: string;
 }
 
 const MeasurementsList: React.FC = () => {
@@ -195,7 +196,7 @@ const MeasurementsList: React.FC = () => {
                           >
                             👁️ View
                           </Link>
-                          {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user.id)) && (
+                          {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
                             <Link
                               to={`/measurements/edit/${measurement.id}`}
                               className="px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition"
