@@ -25,8 +25,16 @@ const Dashboard: React.FC = () => {
     try {
       const response = await axios.get('/api/reports/summary');
       setStats(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch stats:', error);
+      // Set default values if API fails
+      setStats({
+        totalCustomers: 0,
+        totalMeasurements: 0,
+        newEntries: 0,
+        pendingFittings: 0,
+        recentActivity: 0,
+      });
     } finally {
       setLoading(false);
     }
