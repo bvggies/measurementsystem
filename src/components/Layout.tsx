@@ -41,7 +41,9 @@ const Layout: React.FC = () => {
       <motion.div
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -280 }}
-        className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg lg:hidden"
+        className={`fixed inset-y-0 left-0 z-50 w-64 shadow-lg lg:hidden ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b">
@@ -77,7 +79,9 @@ const Layout: React.FC = () => {
       </motion.div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-64 lg:bg-white lg:shadow-lg">
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-64 lg:shadow-lg ${
+        theme === 'dark' ? 'lg:bg-dark-surface' : 'lg:bg-white'
+      }`}>
         <div className="flex flex-col h-full">
           <div className="flex items-center p-4 border-b">
             <div className="flex items-center space-x-2">
@@ -121,7 +125,9 @@ const Layout: React.FC = () => {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white shadow-sm">
+        <header className={`sticky top-0 z-30 shadow-sm ${
+          theme === 'dark' ? 'bg-dark-surface border-b border-dark-border' : 'bg-white'
+        }`}>
           <div className="flex items-center justify-between px-4 py-4 gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
