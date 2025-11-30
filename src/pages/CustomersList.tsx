@@ -232,7 +232,7 @@ const CustomersList: React.FC = () => {
                       transition={{ delay: index * 0.05 }}
                       data-aos="fade-right"
                       className="hover:bg-soft-white cursor-pointer"
-                      onClick={() => window.location.href = `/customers/${customer.id}`}
+                      onClick={() => navigate(`/customers/${customer.id}`)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-primary-navy">{customer.name}</div>
