@@ -28,32 +28,32 @@ const MeasurementView: React.FC = () => {
       setLoading(true);
       setError('');
       const response = await axios.get(`/api/measurements/${id}`);
-      if (response.data) {
+      if (response.data && typeof response.data === 'object') {
         setMeasurement(response.data);
       } else {
-        setError('Measurement data is empty');
+        setError('Measurement data is empty or invalid');
       }
-                  } catch (err: any) {
-                    let errorMsg = 'Failed to load measurement';
-                    if (err.response?.data) {
-                      const data = err.response.data;
-                      if (typeof data.error === 'string') {
-                        errorMsg = data.error;
-                      } else if (typeof data.message === 'string') {
-                        errorMsg = data.message;
-                      }
-                    } else if (err.message && typeof err.message === 'string') {
-                      errorMsg = err.message;
-                    }
-                    setError(errorMsg);
-                    console.error('Failed to fetch measurement:', {
-                      error: err,
-                      response: err.response,
-                      id,
-                    });
-                  } finally {
-                    setLoading(false);
-                  }
+    } catch (err: any) {
+      let errorMsg = 'Failed to load measurement';
+      if (err.response?.data) {
+        const data = err.response.data;
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (typeof data.message === 'string') {
+          errorMsg = data.message;
+        }
+      } else if (err.message && typeof err.message === 'string') {
+        errorMsg = err.message;
+      }
+      setError(errorMsg);
+      console.error('Failed to fetch measurement:', {
+        error: err,
+        response: err.response,
+        id,
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
