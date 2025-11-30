@@ -48,27 +48,37 @@ const Footer: React.FC = () => {
             <h4 className="font-semibold text-primary-navy dark:text-white mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/dashboard" className="hover:text-primary-gold dark:hover:text-primary-gold transition-colors">
+                <Link to="/dashboard" className={`hover:text-primary-gold transition-colors ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-steel'
+                }`}>
                   Dashboard
                 </Link>
               </li>
               <li>
-                <Link to="/measurements" className="hover:text-primary-gold dark:hover:text-primary-gold transition-colors">
+                <Link to="/measurements" className={`hover:text-primary-gold transition-colors ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-steel'
+                }`}>
                   Measurements
                 </Link>
               </li>
               <li>
-                <Link to="/customers" className="hover:text-primary-gold dark:hover:text-primary-gold transition-colors">
+                <Link to="/customers" className={`hover:text-primary-gold transition-colors ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-steel'
+                }`}>
                   Customers
                 </Link>
               </li>
               <li>
-                <Link to="/calendar" className="hover:text-primary-gold dark:hover:text-primary-gold transition-colors">
+                <Link to="/calendar" className={`hover:text-primary-gold transition-colors ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-steel'
+                }`}>
                   Calendar
                 </Link>
               </li>
               <li>
-                <Link to="/settings" className="hover:text-primary-gold dark:hover:text-primary-gold transition-colors">
+                <Link to="/settings" className={`hover:text-primary-gold transition-colors ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-steel'
+                }`}>
                   Settings
                 </Link>
               </li>

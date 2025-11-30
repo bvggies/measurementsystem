@@ -41,7 +41,9 @@ const AdminPanel: React.FC = () => {
       setNewToken(response.data);
       await fetchTokens();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Failed to create token');
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to create token';
+      alert(typeof errorMessage === 'string' ? errorMessage : 'Failed to create token');
+      console.error('Create token error:', error);
     } finally {
       setCreating(false);
     }
@@ -76,14 +78,18 @@ const AdminPanel: React.FC = () => {
 
         <div className="flex gap-4 items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-steel mb-2">
+            <label className={`block text-sm font-medium mb-2 transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>
               Expires in (days, leave empty for no expiration)
             </label>
             <input
               type="number"
               value={expiresInDays}
               onChange={(e) => setExpiresInDays(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+                theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+              }`}
               placeholder="30"
             />
           </div>
@@ -131,35 +137,51 @@ const AdminPanel: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4">Existing Shareable Links</h2>
+        <h2 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Existing Shareable Links</h2>
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-navy mx-auto"></div>
+            <div className={`animate-spin rounded-full h-8 w-8 border-b-2 mx-auto ${
+              theme === 'dark' ? 'border-primary-gold' : 'border-primary-navy'
+            }`}></div>
           </div>
         ) : tokens.length === 0 ? (
-          <p className="text-steel text-center py-8">No shareable links created yet</p>
+          <p className={`text-center py-8 transition-colors duration-200 ${
+            theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+          }`}>No shareable links created yet</p>
         ) : (
           <div className="space-y-4">
             {tokens.map((token) => (
               <div
                 key={token.token}
-                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                className={`p-4 border rounded-lg transition-colors duration-200 ${
+                  theme === 'dark'
+                    ? 'border-dark-border hover:bg-dark-bg'
+                    : 'border-gray-200 hover:bg-gray-50'
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-primary-navy">
+                    <p className={`text-sm font-medium transition-colors duration-200 ${
+                      theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+                    }`}>
                       {window.location.origin}/form/{token.token.substring(0, 20)}...
                     </p>
-                    <p className="text-xs text-steel mt-1">
+                    <p className={`text-xs mt-1 transition-colors duration-200 ${
+                      theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                    }`}>
                       Created: {new Date(token.created_at).toLocaleDateString()}
                       {token.expiresAt && ` | Expires: ${new Date(token.expiresAt).toLocaleDateString()}`}
                     </p>
                   </div>
                   <button
                     onClick={() => copyToClipboard(`${window.location.origin}/form/${token.token}`)}
-                    className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 text-sm"
+                    className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 text-sm transition-colors"
                   >
                     Copy Link
                   </button>

@@ -15,7 +15,7 @@ const pool = new Pool({
 });
 
 async function importExcel() {
-  const client = await pool.connect();
+  let client;
   
   try {
     console.log('Starting import process...');
@@ -34,13 +34,13 @@ async function importExcel() {
     
     console.log(`Found ${data.length} rows in Excel file`);
     
-    // Start transaction
-    await client.query('BEGIN');
-    
-    // Clear all existing measurements
+    // Clear all existing measurements first
+    client = await pool.connect();
     console.log('Clearing existing measurements...');
     await client.query('DELETE FROM measurements');
     console.log('All measurements cleared');
+    client.release();
+    client = null;
     
     // Clear customers (optional - comment out if you want to keep customers)
     // await client.query('DELETE FROM customers');
@@ -48,11 +48,26 @@ async function importExcel() {
     let successCount = 0;
     let errorCount = 0;
     
-    // Process each row
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
+    // Process in batches to avoid connection timeouts
+    const BATCH_SIZE = 50;
+    
+    for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, data.length);
+      const batch = data.slice(batchStart, batchEnd);
+      
+      // Get a new connection for each batch
+      if (!client) {
+        client = await pool.connect();
+      }
       
       try {
+        await client.query('BEGIN');
+        
+        for (let i = 0; i < batch.length; i++) {
+          const row = batch[i];
+          const rowIndex = batchStart + i;
+          
+          try {
         // Map Excel columns to database fields based on actual Excel structure
         const parseMeasurement = (value) => {
           if (!value) return null;
@@ -176,29 +191,41 @@ async function importExcel() {
           ]
         );
         
-        successCount++;
-        if ((i + 1) % 10 === 0) {
-          console.log(`Processed ${i + 1}/${data.length} rows...`);
+            successCount++;
+          } catch (err) {
+            console.error(`Error processing row ${rowIndex + 1}:`, err.message);
+            errorCount++;
+          }
         }
+        
+        // Commit batch
+        await client.query('COMMIT');
+        console.log(`Processed batch ${Math.floor(batchStart / BATCH_SIZE) + 1} (rows ${batchStart + 1}-${batchEnd}/${data.length})...`);
+        
       } catch (err) {
-        console.error(`Error processing row ${i + 1}:`, err.message);
-        errorCount++;
+        await client.query('ROLLBACK');
+        console.error(`Error in batch ${Math.floor(batchStart / BATCH_SIZE) + 1}:`, err.message);
+        errorCount += batch.length;
+      } finally {
+        // Release connection after each batch
+        if (client) {
+          client.release();
+          client = null;
+        }
       }
     }
-    
-    // Commit transaction
-    await client.query('COMMIT');
     
     console.log('\n✅ Import completed!');
     console.log(`✅ Successfully imported: ${successCount} measurements`);
     console.log(`❌ Errors: ${errorCount} rows`);
     
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('❌ Import failed:', error);
     throw error;
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
     await pool.end();
   }
 }
