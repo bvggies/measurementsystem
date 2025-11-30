@@ -43,7 +43,7 @@ const MeasurementView: React.FC = () => {
     );
   }
 
-  if (error || !measurement) {
+  if (error) {
     return (
       <div className="space-y-4">
         <div className="bg-crimson bg-opacity-10 border border-crimson rounded-lg p-4 text-crimson">
@@ -52,6 +52,14 @@ const MeasurementView: React.FC = () => {
         <Link to="/measurements" className="text-primary-navy hover:underline">
           ← Back to Measurements
         </Link>
+      </div>
+    );
+  }
+
+  if (!measurement) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy"></div>
       </div>
     );
   }

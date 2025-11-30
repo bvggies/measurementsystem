@@ -33,7 +33,7 @@ const MeasurementForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isEdit = !!id;
+  const isEdit = !!id && id !== 'new';
   const [measurementData, setMeasurementData] = useState<any>(null);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);

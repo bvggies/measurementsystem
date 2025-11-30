@@ -206,11 +206,11 @@ const MeasurementsList: React.FC = () => {
                             </Link>
                           )}
                           <button
-                            onClick={async () => {
-                              if (window.confirm('Are you sure you want to print this measurement?')) {
-                                window.open(`/measurements/view/${measurement.id}`, '_blank');
-                                setTimeout(() => window.print(), 500);
-                              }
+                            onClick={() => {
+                              navigate(`/measurements/view/${measurement.id}`);
+                              setTimeout(() => {
+                                window.print();
+                              }, 1000);
                             }}
                             className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition"
                             title="Print"
