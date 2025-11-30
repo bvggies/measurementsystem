@@ -62,6 +62,7 @@ const MeasurementForm: React.FC = () => {
 
   const fetchMeasurement = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`/api/measurements/${id}`);
       const m = response.data;
       setMeasurementData(m);
@@ -71,23 +72,35 @@ const MeasurementForm: React.FC = () => {
         client_email: m.customer_email || '',
         client_address: m.customer_address || '',
         units: m.units || 'cm',
-        across_back: m.across_back,
-        chest: m.chest,
-        sleeve_length: m.sleeve_length,
-        around_arm: m.around_arm,
-        neck: m.neck,
-        top_length: m.top_length,
-        wrist: m.wrist,
-        trouser_waist: m.trouser_waist,
-        trouser_thigh: m.trouser_thigh,
-        trouser_knee: m.trouser_knee,
-        trouser_length: m.trouser_length,
-        trouser_bars: m.trouser_bars,
+        across_back: m.across_back ?? null,
+        chest: m.chest ?? null,
+        sleeve_length: m.sleeve_length ?? null,
+        around_arm: m.around_arm ?? null,
+        neck: m.neck ?? null,
+        top_length: m.top_length ?? null,
+        wrist: m.wrist ?? null,
+        trouser_waist: m.trouser_waist ?? null,
+        trouser_thigh: m.trouser_thigh ?? null,
+        trouser_knee: m.trouser_knee ?? null,
+        trouser_length: m.trouser_length ?? null,
+        trouser_bars: m.trouser_bars ?? null,
         additional_info: m.additional_info || '',
         branch: m.branch || '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch measurement:', error);
+      let errorMsg = 'Failed to load measurement';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (typeof data.message === 'string') {
+          errorMsg = data.message;
+        }
+      } else if (error.message && typeof error.message === 'string') {
+        errorMsg = error.message;
+      }
+      setErrors([{ field: 'general', message: errorMsg }]);
     } finally {
       setLoading(false);
     }
