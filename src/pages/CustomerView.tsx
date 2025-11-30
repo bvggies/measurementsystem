@@ -56,7 +56,7 @@ const CustomerView: React.FC = () => {
 
   if (error || !customer) {
     return (
-      <div className="space-y-4 pb-24">
+      <div className="space-y-4 pb-32">
         <div className="bg-crimson bg-opacity-10 border border-crimson rounded-lg p-4 text-crimson">
           <p className="font-semibold">Error loading customer</p>
           <p className="mt-2">{error || 'Customer not found'}</p>
@@ -72,7 +72,7 @@ const CustomerView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
