@@ -20,6 +20,7 @@ async function getSettings(req, res) {
     } catch (dbError) {
       console.error('Database error in getSettings:', dbError);
       // If table doesn't exist or other DB error, return defaults
+      settings = [];
     }
 
     if (settings.length === 0 || !settings[0].settings) {
@@ -55,6 +56,7 @@ async function getSettings(req, res) {
     return res.status(200).json(settingsData);
   } catch (error) {
     console.error('Get settings error:', error);
+    console.error('Error stack:', error.stack);
     // Return default settings on error
     return res.status(200).json({
       name: 'FitTrack',
