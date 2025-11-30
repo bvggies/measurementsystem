@@ -64,9 +64,11 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (response.data) {
         setSettings({ ...defaultSettings, ...response.data });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch settings:', error);
+      console.error('Error details:', error.response?.data);
       // Use default settings if API fails
+      setSettings(defaultSettings);
     } finally {
       setLoading(false);
     }
@@ -95,9 +97,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         root.style.setProperty('--color-emerald', newSettings.colors.emerald);
         root.style.setProperty('--color-crimson', newSettings.colors.crimson);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update settings:', error);
-      throw error;
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to update settings';
+      throw new Error(errorMessage);
     }
   };
 

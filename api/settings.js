@@ -139,12 +139,22 @@ async function updateSettings(req, res) {
 }
 
 module.exports = async (req, res) => {
-  if (req.method === 'GET') {
-    return getSettings(req, res);
-  } else if (req.method === 'PUT') {
-    return updateSettings(req, res);
-  } else {
-    return res.status(405).json({ error: 'Method not allowed' });
+  try {
+    if (req.method === 'GET') {
+      return await getSettings(req, res);
+    } else if (req.method === 'PUT') {
+      return await updateSettings(req, res);
+    } else {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Settings route handler error:', error);
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error.message || 'An unexpected error occurred',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
