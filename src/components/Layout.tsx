@@ -155,12 +155,12 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8 pb-32 sm:pb-36 min-h-screen flex flex-col">
-          <div className="flex-1">
-            <Outlet />
-          </div>
-          <Footer />
+        <main className="p-4 lg:p-8 pb-32 sm:pb-36">
+          <Outlet />
         </main>
+        
+        {/* Footer */}
+        <Footer />
       </div>
 
       {/* Overlay for mobile */}
