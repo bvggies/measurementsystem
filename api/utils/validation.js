@@ -41,18 +41,23 @@ function validateMeasurement(measurement, unit = 'cm') {
   // Only validate fields that are provided - allow any positive number
   measurementFields.forEach((field) => {
     const value = measurement[field];
-    if (value != null && value !== '') {
+    if (value != null && value !== '' && value !== undefined) {
+      // Handle string values that might be empty
+      if (typeof value === 'string' && value.trim() === '') {
+        return; // Skip empty strings
+      }
+      
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
       // Only check if it's a valid number and positive - no range restrictions
       if (typeof numValue !== 'number' || isNaN(numValue)) {
         errors.push({
           field,
-          message: `${field} must be a valid number`,
+          message: `${field.replace(/_/g, ' ')} must be a valid number`,
         });
       } else if (numValue < 0) {
         errors.push({
           field,
-          message: `${field} must be positive`,
+          message: `${field.replace(/_/g, ' ')} must be positive`,
         });
       }
     }

@@ -87,7 +87,21 @@ async function updateMeasurement(req, res) {
 
     const data = req.body;
 
-    // Validate measurement
+    // Basic validation - only check for required client info if updating customer info
+    // Note: For edit, we don't require client info if it's not being updated
+    // But if client_name or client_phone is provided, at least one should be valid
+    if (data.client_name !== undefined || data.client_phone !== undefined) {
+      const clientName = data.client_name || '';
+      const clientPhone = data.client_phone || '';
+      if (!clientName.trim() && !clientPhone.trim()) {
+        return res.status(400).json({
+          error: 'Either client name or phone number is required',
+          errors: [{ field: 'client_info', message: 'Either client name or phone number is required' }],
+        });
+      }
+    }
+
+    // Validate measurement fields (but don't require any)
     const validation = validateMeasurement(data, data.units || existing[0].units);
     if (!validation.isValid) {
       return res.status(400).json({

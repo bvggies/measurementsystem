@@ -251,7 +251,17 @@ const MeasurementsList: React.FC = () => {
                                       throw new Error('Unexpected response from server');
                                     }
                                   } catch (err: any) {
-                                    const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to delete measurement';
+                                    let errorMsg = 'Failed to delete measurement';
+                                    if (err.response?.data) {
+                                      const data = err.response.data;
+                                      if (typeof data.error === 'string') {
+                                        errorMsg = data.error;
+                                      } else if (typeof data.message === 'string') {
+                                        errorMsg = data.message;
+                                      }
+                                    } else if (err.message && typeof err.message === 'string') {
+                                      errorMsg = err.message;
+                                    }
                                     alert(errorMsg);
                                     console.error('Delete error:', err);
                                   }

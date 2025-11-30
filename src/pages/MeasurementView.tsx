@@ -31,17 +31,27 @@ const MeasurementView: React.FC = () => {
       } else {
         setError('Measurement data is empty');
       }
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to load measurement';
-      setError(errorMsg);
-      console.error('Failed to fetch measurement:', {
-        error: err,
-        response: err.response,
-        id,
-      });
-    } finally {
-      setLoading(false);
-    }
+                  } catch (err: any) {
+                    let errorMsg = 'Failed to load measurement';
+                    if (err.response?.data) {
+                      const data = err.response.data;
+                      if (typeof data.error === 'string') {
+                        errorMsg = data.error;
+                      } else if (typeof data.message === 'string') {
+                        errorMsg = data.message;
+                      }
+                    } else if (err.message && typeof err.message === 'string') {
+                      errorMsg = err.message;
+                    }
+                    setError(errorMsg);
+                    console.error('Failed to fetch measurement:', {
+                      error: err,
+                      response: err.response,
+                      id,
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
   }, [id]);
 
   useEffect(() => {
@@ -139,7 +149,18 @@ const MeasurementView: React.FC = () => {
                     await axios.delete(`/api/measurements/${id}`);
                     navigate('/measurements');
                   } catch (err: any) {
-                    alert(err.response?.data?.error || 'Failed to delete measurement');
+                    let errorMsg = 'Failed to delete measurement';
+                    if (err.response?.data) {
+                      const data = err.response.data;
+                      if (typeof data.error === 'string') {
+                        errorMsg = data.error;
+                      } else if (typeof data.message === 'string') {
+                        errorMsg = data.message;
+                      }
+                    } else if (err.message && typeof err.message === 'string') {
+                      errorMsg = err.message;
+                    }
+                    alert(errorMsg);
                   }
                 }
               }}

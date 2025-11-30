@@ -127,7 +127,27 @@ const MeasurementForm: React.FC = () => {
       navigate('/measurements');
     } catch (error: any) {
       console.error('Save error:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to save measurement';
+      let errorMessage = 'Failed to save measurement';
+      
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (typeof data.error === 'string') {
+          errorMessage = data.error;
+        } else if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+          // Handle validation errors array
+          const validationErrors = data.errors.map((err: any) => ({
+            field: err.field || 'general',
+            message: typeof err.message === 'string' ? err.message : 'Validation error',
+          }));
+          setErrors(validationErrors);
+          return;
+        } else if (data.message && typeof data.message === 'string') {
+          errorMessage = data.message;
+        }
+      } else if (error.message && typeof error.message === 'string') {
+        errorMessage = error.message;
+      }
+      
       setErrors([{ field: 'general', message: errorMessage }]);
     } finally {
       setSaving(false);
