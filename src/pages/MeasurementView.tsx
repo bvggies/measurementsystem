@@ -6,12 +6,14 @@ import { format } from 'date-fns';
 import PrintMeasurement from '../components/PrintMeasurement';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const MeasurementView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { settings } = useSettings();
+  const { theme } = useTheme();
   const [measurement, setMeasurement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -84,19 +86,25 @@ const MeasurementView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy"></div>
+      <div className="flex items-center justify-center h-64 pb-32">
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${
+          theme === 'dark' ? 'border-primary-gold' : 'border-primary-navy'
+        }`}></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="bg-crimson bg-opacity-10 border border-crimson rounded-lg p-4 text-crimson">
+      <div className="space-y-4 pb-32">
+        <div className={`bg-crimson bg-opacity-10 border border-crimson rounded-lg p-4 text-crimson transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-crimson/20' : ''
+        }`}>
           {error || 'Measurement not found'}
         </div>
-        <Link to="/measurements" className="text-primary-navy hover:underline">
+        <Link to="/measurements" className={`hover:underline transition-colors duration-200 ${
+          theme === 'dark' ? 'text-primary-gold' : 'text-primary-navy'
+        }`}>
           ← Back to Measurements
         </Link>
       </div>
@@ -105,16 +113,20 @@ const MeasurementView: React.FC = () => {
 
   if (!measurement) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy"></div>
+      <div className="flex items-center justify-center h-64 pb-32">
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${
+          theme === 'dark' ? 'border-primary-gold' : 'border-primary-navy'
+        }`}></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Print Component */}
-      <PrintMeasurement measurement={measurement} />
+    <div className="space-y-6 pb-32">
+      {/* Print Component - Hidden by default, only shows when printing */}
+      <div className="hidden">
+        <PrintMeasurement measurement={measurement} />
+      </div>
 
       {/* Header */}
       <motion.div
@@ -123,8 +135,12 @@ const MeasurementView: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-navy">Measurement Details</h1>
-          <p className="text-steel mt-1">Entry ID: {measurement.entry_id}</p>
+          <h1 className={`text-3xl font-bold transition-colors duration-200 ${
+            theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+          }`}>Measurement Details</h1>
+          <p className={`mt-1 transition-colors duration-200 ${
+            theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+          }`}>Entry ID: {measurement.entry_id}</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -183,25 +199,47 @@ const MeasurementView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Customer Information</h2>
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          theme === 'dark' 
+            ? 'text-dark-text border-dark-border' 
+            : 'text-primary-navy border-steel-light'
+        }`}>Customer Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-steel">Name</p>
-            <p className="font-medium text-gray-900">{measurement.customer_name || 'N/A'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Name</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.customer_name || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Phone</p>
-            <p className="font-medium text-gray-900">{measurement.customer_phone || 'N/A'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Phone</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.customer_phone || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Email</p>
-            <p className="font-medium text-gray-900">{measurement.customer_email || 'N/A'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Email</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.customer_email || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Address</p>
-            <p className="font-medium text-gray-900">{measurement.customer_address || 'N/A'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Address</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.customer_address || 'N/A'}</p>
           </div>
         </div>
       </motion.div>
@@ -212,39 +250,73 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          theme === 'dark' 
+            ? 'text-dark-text border-dark-border' 
+            : 'text-primary-navy border-steel-light'
+        }`}>
           Top Measurements ({measurement.units})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <p className="text-sm text-steel">Across Back</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.across_back || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Across Back</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.across_back || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Chest</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.chest || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Chest</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.chest || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Sleeve Length</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.sleeve_length || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Sleeve Length</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.sleeve_length || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Around Arm</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.around_arm || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Around Arm</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.around_arm || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Neck</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.neck || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Neck</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.neck || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Top Length</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.top_length || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Top Length</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.top_length || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Wrist</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.wrist || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Wrist</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.wrist || '—'}</p>
           </div>
         </div>
       </motion.div>
@@ -255,31 +327,57 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          theme === 'dark' 
+            ? 'text-dark-text border-dark-border' 
+            : 'text-primary-navy border-steel-light'
+        }`}>
           Trouser Measurements ({measurement.units})
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <p className="text-sm text-steel">Waist</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.trouser_waist || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Waist</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.trouser_waist || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Thigh</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.trouser_thigh || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Thigh</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.trouser_thigh || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Knee</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.trouser_knee || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Knee</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.trouser_knee || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Trouser Length</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.trouser_length || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Trouser Length</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.trouser_length || '—'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Bars</p>
-            <p className="text-2xl font-bold text-gray-900">{measurement.trouser_bars || '—'}</p>
+            <p className={`text-sm transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Bars</p>
+            <p className={`text-2xl font-bold transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.trouser_bars || '—'}</p>
           </div>
         </div>
       </motion.div>
@@ -291,10 +389,18 @@ const MeasurementView: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+            theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+          }`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Additional Information</h2>
-          <p className="text-gray-700 whitespace-pre-wrap">{measurement.additional_info}</p>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+            theme === 'dark' 
+              ? 'text-dark-text border-dark-border' 
+              : 'text-primary-navy border-steel-light'
+          }`}>Additional Information</h2>
+          <p className={`whitespace-pre-wrap transition-colors duration-200 ${
+            theme === 'dark' ? 'text-dark-text-secondary' : 'text-gray-700'
+          }`}>{measurement.additional_info}</p>
         </motion.div>
       )}
 
@@ -304,36 +410,58 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         data-aos="fade-up"
-        className="bg-soft-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-soft-white'
+        }`}
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-steel">Created</p>
-            <p className="font-medium text-gray-900">
+            <p className={`transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Created</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>
               {format(new Date(measurement.created_at), 'MMM dd, yyyy HH:mm')}
             </p>
           </div>
           {measurement.updated_at && (
             <div>
-              <p className="text-steel">Last Updated</p>
-              <p className="font-medium text-gray-900">
+              <p className={`transition-colors duration-200 ${
+                theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+              }`}>Last Updated</p>
+              <p className={`font-medium transition-colors duration-200 ${
+                theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+              }`}>
                 {format(new Date(measurement.updated_at), 'MMM dd, yyyy HH:mm')}
               </p>
             </div>
           )}
           <div>
-            <p className="text-steel">Created By</p>
-            <p className="font-medium text-gray-900">{measurement.created_by_name || 'N/A'}</p>
+            <p className={`transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Created By</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.created_by_name || 'N/A'}</p>
           </div>
           {measurement.branch && (
             <div>
-              <p className="text-steel">Branch</p>
-              <p className="font-medium text-gray-900">{measurement.branch}</p>
+              <p className={`transition-colors duration-200 ${
+                theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+              }`}>Branch</p>
+              <p className={`font-medium transition-colors duration-200 ${
+                theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+              }`}>{measurement.branch}</p>
             </div>
           )}
           <div>
-            <p className="text-steel">Version</p>
-            <p className="font-medium text-gray-900">{measurement.version || 1}</p>
+            <p className={`transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+            }`}>Version</p>
+            <p className={`font-medium transition-colors duration-200 ${
+              theme === 'dark' ? 'text-dark-text' : 'text-gray-900'
+            }`}>{measurement.version || 1}</p>
           </div>
         </div>
       </motion.div>

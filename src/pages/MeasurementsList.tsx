@@ -198,16 +198,18 @@ const MeasurementsList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                          <Link
-                            to={`/measurements/view/${measurement.id}`}
+                          <button
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
+                              navigate(`/measurements/view/${measurement.id}`);
                             }}
                             className="px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                             title="View"
                           >
                             👁️ View
-                          </Link>
+                          </button>
                           {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
                             <Link
                               to={`/measurements/edit/${measurement.id}`}
@@ -226,9 +228,10 @@ const MeasurementsList: React.FC = () => {
                               e.stopPropagation();
                               e.preventDefault();
                               navigate(`/measurements/view/${measurement.id}`);
+                              // Wait for page to load before printing
                               setTimeout(() => {
                                 window.print();
-                              }, 1000);
+                              }, 1500);
                             }}
                             className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                             title="Print"

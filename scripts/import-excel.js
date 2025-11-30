@@ -12,6 +12,11 @@ const fs = require('fs');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  max: 5, // Limit pool size
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000, // 10 second timeout
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 });
 
 async function importExcel() {
@@ -49,15 +54,26 @@ async function importExcel() {
     let errorCount = 0;
     
     // Process in batches to avoid connection timeouts
-    const BATCH_SIZE = 50;
+    const BATCH_SIZE = 25; // Reduced batch size for better stability
     
     for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
       const batchEnd = Math.min(batchStart + BATCH_SIZE, data.length);
       const batch = data.slice(batchStart, batchEnd);
       
-      // Get a new connection for each batch
-      if (!client) {
-        client = await pool.connect();
+      // Get a new connection for each batch with retry logic
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          if (!client) {
+            client = await pool.connect();
+          }
+          break;
+        } catch (err) {
+          retries--;
+          if (retries === 0) throw err;
+          console.log(`Connection failed, retrying... (${3 - retries}/3)`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        }
       }
       
       try {
@@ -151,14 +167,18 @@ async function importExcel() {
         }
         
         // Create measurement
-        // Use a default user ID (you may need to adjust this)
+        // Use a default user ID (cache it to avoid repeated queries)
         let userId = null;
-        try {
-          const defaultUserId = await client.query('SELECT id FROM users WHERE role = $1 LIMIT 1', ['admin']);
-          userId = defaultUserId.rows[0]?.id || null;
-        } catch (err) {
-          console.log('Could not get default user, continuing without created_by');
+        if (!global.defaultUserId) {
+          try {
+            const defaultUserIdResult = await client.query('SELECT id FROM users WHERE role = $1 LIMIT 1', ['admin']);
+            global.defaultUserId = defaultUserIdResult.rows[0]?.id || null;
+          } catch (err) {
+            console.log('Could not get default user, continuing without created_by');
+            global.defaultUserId = null;
+          }
         }
+        userId = global.defaultUserId;
         
         await client.query(
           `INSERT INTO measurements (
@@ -200,18 +220,28 @@ async function importExcel() {
         
         // Commit batch
         await client.query('COMMIT');
-        console.log(`Processed batch ${Math.floor(batchStart / BATCH_SIZE) + 1} (rows ${batchStart + 1}-${batchEnd}/${data.length})...`);
+        console.log(`✅ Processed batch ${Math.floor(batchStart / BATCH_SIZE) + 1} (rows ${batchStart + 1}-${batchEnd}/${data.length}) - Success: ${successCount}, Errors: ${errorCount}`);
         
       } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(`Error in batch ${Math.floor(batchStart / BATCH_SIZE) + 1}:`, err.message);
+        try {
+          await client.query('ROLLBACK');
+        } catch (rollbackErr) {
+          console.error('Rollback error:', rollbackErr.message);
+        }
+        console.error(`❌ Error in batch ${Math.floor(batchStart / BATCH_SIZE) + 1}:`, err.message);
         errorCount += batch.length;
       } finally {
         // Release connection after each batch
         if (client) {
-          client.release();
+          try {
+            client.release();
+          } catch (releaseErr) {
+            console.error('Error releasing connection:', releaseErr.message);
+          }
           client = null;
         }
+        // Small delay between batches to prevent overwhelming the connection
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
     
