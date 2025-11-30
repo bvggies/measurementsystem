@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
@@ -18,6 +18,7 @@ interface Measurement {
 
 const MeasurementsList: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
