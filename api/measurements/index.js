@@ -102,7 +102,8 @@ async function getMeasurements(req, res) {
         c.name as customer_name,
         c.phone as customer_phone,
         c.email as customer_email,
-        u.name as created_by_name
+        u.name as created_by_name,
+        m.created_by
        FROM measurements m
        LEFT JOIN customers c ON m.customer_id = c.id
        LEFT JOIN users u ON m.created_by = u.id
