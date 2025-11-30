@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Measurement {
   id: string;
@@ -15,6 +16,7 @@ interface Measurement {
 }
 
 const MeasurementsList: React.FC = () => {
+  const { user } = useAuth();
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -185,12 +187,54 @@ const MeasurementsList: React.FC = () => {
                         {format(new Date(measurement.created_at), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Link
-                          to={`/measurements/${measurement.id}`}
-                          className="text-primary-navy hover:text-opacity-80"
-                        >
-                          View
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/measurements/view/${measurement.id}`}
+                            className="px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition"
+                            title="View"
+                          >
+                            👁️ View
+                          </Link>
+                          {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user.id)) && (
+                            <Link
+                              to={`/measurements/edit/${measurement.id}`}
+                              className="px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition"
+                              title="Edit"
+                            >
+                              ✏️ Edit
+                            </Link>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (window.confirm('Are you sure you want to print this measurement?')) {
+                                window.open(`/measurements/view/${measurement.id}`, '_blank');
+                                setTimeout(() => window.print(), 500);
+                              }
+                            }}
+                            className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition"
+                            title="Print"
+                          >
+                            🖨️ Print
+                          </button>
+                          {user?.role === 'admin' && (
+                            <button
+                              onClick={async () => {
+                                if (window.confirm(`Are you sure you want to delete measurement ${measurement.entry_id}? This action cannot be undone.`)) {
+                                  try {
+                                    await axios.delete(`/api/measurements/${measurement.id}`);
+                                    fetchMeasurements(); // Refresh the list
+                                  } catch (err: any) {
+                                    alert(err.response?.data?.error || 'Failed to delete measurement');
+                                  }
+                                }
+                              }}
+                              className="px-2 py-1 text-xs bg-crimson text-white rounded hover:bg-opacity-90 transition"
+                              title="Delete"
+                            >
+                              🗑️ Delete
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </motion.tr>
                   ))}

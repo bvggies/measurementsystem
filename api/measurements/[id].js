@@ -2,31 +2,20 @@
  * GET /api/measurements/:id - Get single measurement
  * PUT /api/measurements/:id - Update measurement
  * DELETE /api/measurements/:id - Delete measurement
+ * JavaScript version for Vercel compatibility
  */
 
-// Vercel serverless function types
-interface VercelRequest {
-  method?: string;
-  body?: any;
-  query?: any;
-  headers?: any;
-}
-
-interface VercelResponse {
-  status: (code: number) => VercelResponse;
-  json: (data: any) => void;
-}
-import { query } from '../../src/utils/db';
-import { requireAuth } from '../../src/utils/auth';
-import { validateMeasurement } from '../../src/utils/validation';
+const { query } = require('../utils/db');
+const { requireAuth } = require('../utils/auth');
+const { validateMeasurement } = require('../utils/validation');
 
 // GET /api/measurements/:id
-async function getMeasurement(req: VercelRequest, res: VercelResponse) {
+async function getMeasurement(req, res) {
   try {
     const user = requireAuth(req);
     const { id } = req.query;
 
-    const measurements = await query<any>(
+    const measurements = await query(
       `SELECT 
         m.*,
         c.name as customer_name,
@@ -62,28 +51,26 @@ async function getMeasurement(req: VercelRequest, res: VercelResponse) {
     }
 
     return res.status(200).json(measurement);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Get measurement error:', error);
-    if (error.message === 'Authentication required') {
+    if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
   }
 }
 
 // PUT /api/measurements/:id
-async function updateMeasurement(req: VercelRequest, res: VercelResponse) {
+async function updateMeasurement(req, res) {
   try {
     const user = requireAuth(req);
     const { id } = req.query;
 
     if (user.role === 'customer') {
       return res.status(403).json({ error: 'Insufficient permissions' });
-    }
-
-    // Manager can update measurements
-    if (user.role === 'manager' && req.method === 'PUT') {
-      // Allow managers to update
     }
 
     // Get existing measurement
@@ -150,24 +137,31 @@ async function updateMeasurement(req: VercelRequest, res: VercelResponse) {
     );
 
     // Log audit
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, resource_id, details)
-       VALUES ($1, 'update', 'measurement', $2, $3)`,
-      [user.userId, id, JSON.stringify({ changes: Object.keys(data) })]
-    );
+    try {
+      await query(
+        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
+         VALUES ($1, 'update', 'measurement', $2, $3)`,
+        [user.userId, id, JSON.stringify({ changes: Object.keys(data) })]
+      );
+    } catch (err) {
+      console.log('Could not log activity:', err.message);
+    }
 
     return res.status(200).json({ message: 'Measurement updated successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Update measurement error:', error);
-    if (error.message === 'Authentication required') {
+    if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
   }
 }
 
 // DELETE /api/measurements/:id
-async function deleteMeasurement(req: VercelRequest, res: VercelResponse) {
+async function deleteMeasurement(req, res) {
   try {
     const user = requireAuth(req);
     const { id } = req.query;
@@ -184,23 +178,30 @@ async function deleteMeasurement(req: VercelRequest, res: VercelResponse) {
     await query('DELETE FROM measurements WHERE id = $1', [id]);
 
     // Log audit
-    await query(
-      `INSERT INTO audit_logs (user_id, action, resource_type, resource_id, details)
-       VALUES ($1, 'delete', 'measurement', $2, $3)`,
-      [user.userId, id, JSON.stringify({ entry_id: existing[0].entry_id })]
-    );
+    try {
+      await query(
+        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
+         VALUES ($1, 'delete', 'measurement', $2, $3)`,
+        [user.userId, id, JSON.stringify({ entry_id: existing[0].entry_id })]
+      );
+    } catch (err) {
+      console.log('Could not log activity:', err.message);
+    }
 
     return res.status(200).json({ message: 'Measurement deleted successfully' });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Delete measurement error:', error);
-    if (error.message === 'Authentication required') {
+    if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async (req, res) => {
   if (req.method === 'GET') {
     return getMeasurement(req, res);
   } else if (req.method === 'PUT') {
@@ -210,5 +211,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } else {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-}
+};
 

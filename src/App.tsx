@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MeasurementsList from './pages/MeasurementsList';
 import MeasurementForm from './pages/MeasurementForm';
+import MeasurementView from './pages/MeasurementView';
 import ImportPage from './pages/ImportPage';
 import CustomersList from './pages/CustomersList';
 import OrdersList from './pages/OrdersList';
@@ -64,8 +65,8 @@ function AppRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="measurements" element={<MeasurementsList />} />
         <Route path="measurements/new" element={<MeasurementForm />} />
-        <Route path="measurements/:id" element={<MeasurementForm />} />
-        <Route path="measurements/:id/edit" element={<MeasurementForm />} />
+        <Route path="measurements/view/:id" element={<MeasurementView />} />
+        <Route path="measurements/edit/:id" element={<MeasurementForm />} />
         <Route path="import" element={<ProtectedRoute allowedRoles={['admin']}><ImportPage /></ProtectedRoute>} />
         <Route path="customers" element={<CustomersList />} />
         <Route path="orders" element={<OrdersList />} />
