@@ -5,23 +5,40 @@ import axios from '../utils/api';
 import { format } from 'date-fns';
 import PrintMeasurement from '../components/PrintMeasurement';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 const MeasurementView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { settings } = useSettings();
   const [measurement, setMeasurement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const fetchMeasurement = useCallback(async () => {
+    if (!id) {
+      setError('Invalid measurement ID');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
+      setError('');
       const response = await axios.get(`/api/measurements/${id}`);
-      setMeasurement(response.data);
+      if (response.data) {
+        setMeasurement(response.data);
+      } else {
+        setError('Measurement data is empty');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load measurement');
-      console.error('Failed to fetch measurement:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to load measurement';
+      setError(errorMsg);
+      console.error('Failed to fetch measurement:', {
+        error: err,
+        response: err.response,
+        id,
+      });
     } finally {
       setLoading(false);
     }
@@ -32,7 +49,26 @@ const MeasurementView: React.FC = () => {
   }, [fetchMeasurement]);
 
   const handlePrint = () => {
+    // Set document title for print
+    const systemName = settings.name || 'FitTrack';
+    const customerName = measurement?.customer_name || 'Measurement';
+    const entryId = measurement?.entry_id || '';
+    document.title = `${systemName} - ${customerName} - ${entryId}`;
+    
+    // Trigger print
     window.print();
+    
+    // After print, trigger download/save
+    setTimeout(() => {
+      // Generate filename
+      const sanitizedCustomerName = (customerName || 'Measurement').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const sanitizedEntryId = (entryId || Date.now().toString()).replace(/[^a-z0-9]/gi, '_');
+      const filename = `${systemName}_${sanitizedCustomerName}_${sanitizedEntryId}.pdf`;
+      
+      // Note: Actual PDF generation would require a library like jsPDF or html2pdf
+      // For now, the browser's print dialog will allow saving as PDF
+      console.log('Print completed. Suggested filename:', filename);
+    }, 100);
   };
 
   if (loading) {

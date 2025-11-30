@@ -1,18 +1,24 @@
 import React from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface PrintMeasurementProps {
   measurement: any;
 }
 
 const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
+  const { settings } = useSettings();
+  const systemName = settings.name || 'FitTrack';
+  const customerName = measurement?.customer_name || 'Customer';
+
   return (
     <>
       <div className="hidden print:block">
         <div className="p-8">
           <div className="mb-8 text-center">
-            <img src="/applogo.png" alt="FitTrack" className="h-16 w-16 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-primary-navy">FitTrack</h1>
-            <p className="text-steel">Measurement Record</p>
+            <img src={settings.logo || "/applogo.png"} alt={systemName} className="h-16 w-16 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-primary-navy">{systemName}</h1>
+            <p className="text-steel">{settings.tagline || 'Measurement Record'}</p>
+            <p className="text-sm text-steel mt-2">Customer: {customerName}</p>
           </div>
 
           <div className="mb-6">

@@ -243,10 +243,17 @@ const MeasurementsList: React.FC = () => {
                                 e.preventDefault();
                                 if (window.confirm(`Are you sure you want to delete measurement ${measurement.entry_id}? This action cannot be undone.`)) {
                                   try {
-                                    await axios.delete(`/api/measurements/${measurement.id}`);
-                                    await fetchMeasurements(); // Refresh the list
+                                    const response = await axios.delete(`/api/measurements/${measurement.id}`);
+                                    if (response.data?.message) {
+                                      // Success - refresh the list
+                                      await fetchMeasurements();
+                                    } else {
+                                      throw new Error('Unexpected response from server');
+                                    }
                                   } catch (err: any) {
-                                    alert(err.response?.data?.error || 'Failed to delete measurement');
+                                    const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to delete measurement';
+                                    alert(errorMsg);
+                                    console.error('Delete error:', err);
                                   }
                                 }
                               }}

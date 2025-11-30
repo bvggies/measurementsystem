@@ -167,15 +167,30 @@ async function deleteMeasurement(req, res) {
     const user = requireAuth(req);
     const id = req.query.id;
 
+    if (!id) {
+      return res.status(400).json({ error: 'Measurement ID is required' });
+    }
+
     if (user.role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can delete measurements' });
     }
 
-    const existing = await query('SELECT * FROM measurements WHERE id = $1', [id]);
+    // Get existing measurement with customer info for logging
+    const existing = await query(
+      `SELECT m.*, c.name as customer_name 
+       FROM measurements m 
+       LEFT JOIN customers c ON m.customer_id = c.id 
+       WHERE m.id = $1`,
+      [id]
+    );
+    
     if (existing.length === 0) {
       return res.status(404).json({ error: 'Measurement not found' });
     }
 
+    const measurement = existing[0];
+
+    // Delete the measurement
     await query('DELETE FROM measurements WHERE id = $1', [id]);
 
     // Log audit
@@ -183,21 +198,32 @@ async function deleteMeasurement(req, res) {
       await query(
         `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
          VALUES ($1, 'delete', 'measurement', $2, $3)`,
-        [user.userId, id, JSON.stringify({ entry_id: existing[0].entry_id })]
+        [
+          user.userId, 
+          id, 
+          JSON.stringify({ 
+            entry_id: measurement.entry_id,
+            customer_name: measurement.customer_name 
+          })
+        ]
       );
     } catch (err) {
       console.log('Could not log activity:', err.message);
+      // Don't fail the delete if logging fails
     }
 
-    return res.status(200).json({ message: 'Measurement deleted successfully' });
+    return res.status(200).json({ 
+      message: 'Measurement deleted successfully',
+      deletedId: id
+    });
   } catch (error) {
     console.error('Delete measurement error:', error);
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
     return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message
+      error: 'Failed to delete measurement',
+      message: error.message || 'Internal server error'
     });
   }
 }
