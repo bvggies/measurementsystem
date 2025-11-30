@@ -169,6 +169,14 @@ const MeasurementsList: React.FC = () => {
                       transition={{ delay: index * 0.05 }}
                       data-aos="fade-right"
                       className="hover:bg-gray-50"
+                      onClick={(e) => {
+                        // Don't navigate if clicking on action buttons
+                        if ((e.target as HTMLElement).closest('a, button')) {
+                          return;
+                        }
+                        navigate(`/measurements/view/${measurement.id}`);
+                      }}
+                      style={{ cursor: 'pointer' }}
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {measurement.entry_id}
@@ -189,10 +197,13 @@ const MeasurementsList: React.FC = () => {
                         {format(new Date(measurement.created_at), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                           <Link
                             to={`/measurements/view/${measurement.id}`}
-                            className="px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                            className="px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                             title="View"
                           >
                             👁️ View
@@ -200,37 +211,46 @@ const MeasurementsList: React.FC = () => {
                           {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
                             <Link
                               to={`/measurements/edit/${measurement.id}`}
-                              className="px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                               title="Edit"
                             >
                               ✏️ Edit
                             </Link>
                           )}
                           <button
-                            onClick={() => {
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
                               navigate(`/measurements/view/${measurement.id}`);
                               setTimeout(() => {
                                 window.print();
                               }, 1000);
                             }}
-                            className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition"
+                            className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                             title="Print"
                           >
                             🖨️ Print
                           </button>
                           {user?.role === 'admin' && (
                             <button
-                              onClick={async () => {
+                              type="button"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
                                 if (window.confirm(`Are you sure you want to delete measurement ${measurement.entry_id}? This action cannot be undone.`)) {
                                   try {
                                     await axios.delete(`/api/measurements/${measurement.id}`);
-                                    fetchMeasurements(); // Refresh the list
+                                    await fetchMeasurements(); // Refresh the list
                                   } catch (err: any) {
                                     alert(err.response?.data?.error || 'Failed to delete measurement');
                                   }
                                 }
                               }}
-                              className="px-2 py-1 text-xs bg-crimson text-white rounded hover:bg-opacity-90 transition"
+                              className="px-2 py-1 text-xs bg-crimson text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
                               title="Delete"
                             >
                               🗑️ Delete
