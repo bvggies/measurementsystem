@@ -417,11 +417,17 @@ const Calendar: React.FC = () => {
                 </div>
               )}
 
-              {selectedFitting.measurement_entry_id && (
+              {selectedFitting.measurement_entry_id && selectedFitting.measurement_id && (
                 <div>
                   <Link
                     to={`/measurements/view/${selectedFitting.measurement_id}`}
                     className="text-primary-gold hover:underline"
+                    onClick={(e) => {
+                      if (!selectedFitting.measurement_id) {
+                        e.preventDefault();
+                        alert('Measurement ID is missing');
+                      }
+                    }}
                   >
                     View Measurement: {selectedFitting.measurement_entry_id}
                   </Link>

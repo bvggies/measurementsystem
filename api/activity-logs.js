@@ -51,11 +51,22 @@ async function getActivityLogs(req, res) {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    // Get total count
-    const countResult = await query(
-      `SELECT COUNT(*) as total FROM activity_logs al ${whereClause}`,
-      params
-    );
+    // Get total count - try activity_logs first, fallback to audit_logs
+    let countResult;
+    let tableName = 'activity_logs';
+    try {
+      countResult = await query(
+        `SELECT COUNT(*) as total FROM activity_logs al ${whereClause}`,
+        params
+      );
+    } catch (err) {
+      // Fallback to audit_logs if activity_logs doesn't exist
+      tableName = 'audit_logs';
+      countResult = await query(
+        `SELECT COUNT(*) as total FROM audit_logs al ${whereClause}`,
+        params
+      );
+    }
     const total = parseInt(countResult[0]?.total || 0);
     const totalPages = Math.ceil(total / limit);
 
@@ -66,7 +77,7 @@ async function getActivityLogs(req, res) {
         al.*,
         u.name as user_name,
         u.email as user_email
-       FROM activity_logs al
+       FROM ${tableName} al
        LEFT JOIN users u ON al.user_id = u.id
        ${whereClause}
        ORDER BY al.created_at DESC
