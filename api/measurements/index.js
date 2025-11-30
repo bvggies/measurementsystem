@@ -263,10 +263,15 @@ async function createMeasurement(req, res) {
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
+    // Handle database constraint errors
+    if (error.code === '23505') { // Unique constraint violation
+      return res.status(400).json({ 
+        error: 'A measurement with this entry ID already exists',
+      });
+    }
     return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Failed to create measurement',
+      message: error.message || 'Internal server error',
     });
   }
 }
