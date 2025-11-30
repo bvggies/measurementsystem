@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 const { query } = require('../utils/db');
 const { generateToken } = require('../utils/auth');
 
-module.exports = async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
