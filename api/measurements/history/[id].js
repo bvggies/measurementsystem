@@ -1,24 +1,13 @@
 /**
  * GET /api/measurements/history/:id
  * Get measurement history/audit trail
+ * JavaScript version for Vercel compatibility
  */
 
-// Vercel serverless function types
-interface VercelRequest {
-  method?: string;
-  body?: any;
-  query?: any;
-  headers?: any;
-}
+const { query } = require('../../../utils/db');
+const { requireAuth } = require('../../../utils/auth');
 
-interface VercelResponse {
-  status: (code: number) => VercelResponse;
-  json: (data: any) => void;
-}
-import { query } from '../../src/utils/db';
-import { requireAuth } from '../../src/utils/auth';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -34,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Get history
-    const history = await query<any>(
+    const history = await query(
       `SELECT 
         h.*,
         u.name as changed_by_name,
@@ -48,14 +37,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({
       measurementId: id,
-      history,
+      history: history || [],
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Get history error:', error);
-    if (error.message === 'Authentication required') {
+    if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
       return res.status(401).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message
+    });
   }
-}
+};
 
