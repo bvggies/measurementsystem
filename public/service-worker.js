@@ -1,4 +1,6 @@
-const CACHE_NAME = 'fittrack-v1';
+// Version-based cache name - update this when deploying new versions
+const CACHE_VERSION = 'v' + new Date().getTime();
+const CACHE_NAME = `fittrack-${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
   '/static/css/main.css',
@@ -27,13 +29,16 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          // Delete all old FitTrack caches
+          if (cacheName.startsWith('fittrack-') && cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
+  // Immediately take control of all clients
   return self.clients.claim();
 });
 
@@ -44,8 +49,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API requests
+  // Never cache API requests - always fetch fresh
   if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Return error response if network fails
+        return new Response(JSON.stringify({ error: 'Network error' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
     return;
   }
 

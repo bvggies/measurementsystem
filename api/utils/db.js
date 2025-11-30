@@ -19,12 +19,18 @@ const initDb = () => {
 
   pool = new Pool({
     connectionString,
-    ssl: {
+    ssl: connectionString?.includes('localhost') ? false : {
       rejectUnauthorized: false,
     },
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 10000, // Increased timeout
+    statement_timeout: 30000, // 30 second statement timeout
+  });
+
+  // Handle pool errors
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
   });
 
   return pool;

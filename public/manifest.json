@@ -2,6 +2,7 @@
   "short_name": "FitTrack",
   "name": "FitTrack - Tailoring Measurement System",
   "description": "Professional tailoring measurement management system",
+  "version": "1.0.0",
   "icons": [
     {
       "src": "applogo.png",

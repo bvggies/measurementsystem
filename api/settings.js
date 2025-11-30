@@ -163,6 +163,11 @@ async function updateSettings(req, res) {
 }
 
 module.exports = async (req, res) => {
+  // Set cache-control headers
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
   try {
     if (req.method === 'GET') {
       return await getSettings(req, res);
