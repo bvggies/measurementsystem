@@ -13,7 +13,8 @@ const { validateMeasurement } = require('../utils/validation');
 async function getMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    const { id } = req.query;
+    // Vercel dynamic routes: id comes from req.query for [id].js files
+    const id = req.query.id;
 
     const measurements = await query(
       `SELECT 
@@ -67,7 +68,7 @@ async function getMeasurement(req, res) {
 async function updateMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    const { id } = req.query;
+    const id = req.query.id;
 
     if (user.role === 'customer') {
       return res.status(403).json({ error: 'Insufficient permissions' });
@@ -164,7 +165,7 @@ async function updateMeasurement(req, res) {
 async function deleteMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    const { id } = req.query;
+    const id = req.query.id;
 
     if (user.role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can delete measurements' });
