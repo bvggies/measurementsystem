@@ -11,9 +11,16 @@ const { requireAuth } = require('./utils/auth');
 async function getSettings(req, res) {
   try {
     // Settings can be viewed by all authenticated users, but only admin can modify
-    const settings = await query(
-      `SELECT * FROM system_settings ORDER BY id DESC LIMIT 1`
-    );
+    // Try to get settings, but don't require auth for GET
+    let settings = [];
+    try {
+      settings = await query(
+        `SELECT * FROM system_settings ORDER BY id DESC LIMIT 1`
+      );
+    } catch (dbError) {
+      console.error('Database error in getSettings:', dbError);
+      // If table doesn't exist or other DB error, return defaults
+    }
 
     if (settings.length === 0 || !settings[0].settings) {
       // Return default settings if none exist
@@ -108,7 +115,7 @@ async function updateSettings(req, res) {
     // Log activity
     try {
       await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
+        `INSERT INTO audit_logs (user_id, action, resource_type, resource_id, details)
          VALUES ($1, 'update', 'settings', $2, $3)`,
         [user.userId, existing[0]?.id || 'new', JSON.stringify({ updated: Object.keys(settings) })]
       );
