@@ -57,3 +57,26 @@ code {
   color: #e5e5e5;
 }
 
+/* Hide scrollbar for bottom nav */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Better text contrast in dark mode */
+.dark .text-steel {
+  color: #a0a0a0;
+}
+
+.dark .text-gray-700 {
+  color: #d1d5db;
+}
+
+.dark .text-gray-900 {
+  color: #f3f4f6;
+}
+

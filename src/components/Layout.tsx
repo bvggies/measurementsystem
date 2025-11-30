@@ -139,14 +139,22 @@ const Layout: React.FC = () => {
             <div className="flex-1 max-w-2xl hidden md:block">
               <GlobalSearch />
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="group relative">
+                <ThemeToggle />
+              </div>
+              <InstallButton />
               <div className="hidden lg:block">
-                <p className="font-medium text-primary-navy">{user?.name}</p>
-                <p className="text-sm text-steel capitalize">{user?.role}</p>
+                <p className={`font-medium transition-colors duration-200 ${
+                  theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+                }`}>{user?.name}</p>
+                <p className={`text-sm capitalize transition-colors duration-200 ${
+                  theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                }`}>{user?.role}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="lg:hidden px-4 py-2 text-sm font-medium text-white bg-crimson rounded-lg hover:bg-opacity-90"
+                className="lg:hidden px-4 py-2 text-sm font-medium text-white bg-crimson rounded-lg hover:bg-opacity-90 transition-colors"
               >
                 Logout
               </button>

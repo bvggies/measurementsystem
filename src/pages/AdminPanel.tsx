@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ShareableToken {
   token: string;
@@ -10,6 +11,7 @@ interface ShareableToken {
 }
 
 const AdminPanel: React.FC = () => {
+  const { theme } = useTheme();
   const [tokens, setTokens] = useState<ShareableToken[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -106,7 +108,11 @@ const AdminPanel: React.FC = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-4 p-4 bg-emerald bg-opacity-10 border border-emerald rounded-lg"
+            className={`mt-4 p-4 border rounded-lg transition-colors duration-200 ${
+              theme === 'dark'
+                ? 'bg-emerald/20 border-emerald/50'
+                : 'bg-emerald bg-opacity-10 border-emerald'
+            }`}
           >
             <p className="text-sm font-medium text-emerald mb-2">✅ Shareable link created!</p>
             <div className="flex gap-2">
@@ -114,17 +120,23 @@ const AdminPanel: React.FC = () => {
                 type="text"
                 value={newToken.shareUrl}
                 readOnly
-                className="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm"
+                className={`flex-1 px-4 py-2 border rounded-lg text-sm transition-colors duration-200 ${
+                  theme === 'dark'
+                    ? 'bg-dark-bg border-dark-border text-dark-text'
+                    : 'bg-white border-gray-300'
+                }`}
               />
               <button
                 onClick={() => copyToClipboard(newToken.shareUrl)}
-                className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90"
+                className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 transition-colors"
               >
                 Copy
               </button>
             </div>
             {newToken.expiresAt && (
-              <p className="text-xs text-steel mt-2">
+              <p className={`text-xs mt-2 transition-colors duration-200 ${
+                theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+              }`}>
                 Expires: {new Date(newToken.expiresAt).toLocaleDateString()}
               </p>
             )}
