@@ -110,9 +110,11 @@ const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
             </div>
           )}
 
-          <div className="mt-8 text-sm text-steel text-center">
+          <div className="mt-8 text-sm text-steel text-center border-t pt-4">
+            <p className="font-semibold text-primary-navy mb-2">{systemName} - Measurement Record</p>
             <p>Created: {new Date(measurement.created_at).toLocaleDateString()}</p>
             {measurement.created_by_name && <p>Created by: {measurement.created_by_name}</p>}
+            {measurement.entry_id && <p>Entry ID: {measurement.entry_id}</p>}
           </div>
         </div>
       </div>
