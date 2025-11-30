@@ -57,13 +57,15 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <h1 className="text-3xl font-bold text-primary-navy">Admin Panel</h1>
+        <h1 className={`text-3xl font-bold transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Admin Panel</h1>
       </motion.div>
 
       {/* Create Shareable Form Link */}
@@ -71,10 +73,16 @@ const AdminPanel: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4">Shareable Measurement Form</h2>
-        <p className="text-steel mb-4">
+        <h2 className={`text-xl font-bold mb-4 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Shareable Measurement Form</h2>
+        <p className={`mb-4 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+        }`}>
           Create a shareable link that customers can use to submit their measurements remotely.
         </p>
 
