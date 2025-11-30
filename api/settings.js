@@ -76,7 +76,6 @@ async function getSettings(req, res) {
 // PUT /api/settings
 async function updateSettings(req, res) {
   try {
-    const { requireAuth } = require('./utils/auth');
     const user = requireAuth(req);
     
     // Check if user is admin

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface ActivityLog {
   id: string;
@@ -18,8 +19,10 @@ interface ActivityLog {
 }
 
 const ActivityLogs: React.FC = () => {
+  const { theme } = useTheme();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     action: '',
     resource_type: '',
@@ -44,10 +47,29 @@ const ActivityLogs: React.FC = () => {
       });
 
       const response = await axios.get(`/api/activity-logs?${params}`);
-      setLogs(response.data.data);
-      setTotalPages(response.data.pagination?.totalPages || 1);
-    } catch (error) {
+      if (response.data && response.data.data) {
+        setLogs(response.data.data);
+        setTotalPages(response.data.pagination?.totalPages || 1);
+        setError('');
+      } else {
+        setLogs([]);
+        setError('No activity logs data received');
+      }
+    } catch (error: any) {
       console.error('Failed to fetch activity logs:', error);
+      let errorMsg = 'Failed to load activity logs';
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (typeof data.message === 'string') {
+          errorMsg = data.message;
+        }
+      } else if (error.message && typeof error.message === 'string') {
+        errorMsg = error.message;
+      }
+      setError(errorMsg);
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -73,28 +95,50 @@ const ActivityLogs: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <h1 className="text-3xl font-bold text-primary-navy">Activity Logs</h1>
+        <h1 className={`text-3xl font-bold transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Activity Logs</h1>
       </motion.div>
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className={`p-4 border rounded-lg transition-colors duration-200 ${
+            theme === 'dark'
+              ? 'bg-crimson/20 border-crimson/50 text-crimson'
+              : 'bg-crimson bg-opacity-10 border-crimson text-crimson'
+          }`}
+        >
+          {error}
+        </motion.div>
+      )}
 
       {/* Filters */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
-        <h2 className="text-lg font-semibold text-primary-navy mb-4">Filters</h2>
+        <h2 className={`text-lg font-semibold mb-4 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Filters</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <select
             value={filters.action}
             onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+            className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+              theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+            }`}
           >
             <option value="">All Actions</option>
             <option value="create">Create</option>
@@ -107,7 +151,9 @@ const ActivityLogs: React.FC = () => {
           <select
             value={filters.resource_type}
             onChange={(e) => setFilters({ ...filters, resource_type: e.target.value })}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+            className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+              theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+            }`}
           >
             <option value="">All Resources</option>
             <option value="measurement">Measurement</option>
@@ -121,7 +167,9 @@ const ActivityLogs: React.FC = () => {
             value={filters.user_id}
             onChange={(e) => setFilters({ ...filters, user_id: e.target.value })}
             placeholder="User ID"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+            className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+              theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+            }`}
           />
 
           <input
@@ -129,7 +177,9 @@ const ActivityLogs: React.FC = () => {
             value={filters.fromDate}
             onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
             placeholder="From Date"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+            className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+              theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+            }`}
           />
 
           <input
@@ -137,7 +187,9 @@ const ActivityLogs: React.FC = () => {
             value={filters.toDate}
             onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
             placeholder="To Date"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+            className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold transition-colors duration-200 ${
+              theme === 'dark' ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+            }`}
           />
         </div>
       </motion.div>
@@ -147,19 +199,27 @@ const ActivityLogs: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md overflow-hidden"
+        className={`rounded-xl shadow-md overflow-hidden transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
       >
         {loading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy mx-auto"></div>
+            <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto transition-colors duration-200 ${
+              theme === 'dark' ? 'border-primary-gold' : 'border-primary-navy'
+            }`}></div>
           </div>
         ) : logs.length === 0 ? (
-          <div className="p-8 text-center text-steel">No activity logs found</div>
+          <div className={`p-8 text-center transition-colors duration-200 ${
+            theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+          }`}>No activity logs found</div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-primary-navy text-white">
+                <thead className={`transition-colors duration-200 ${
+                  theme === 'dark' ? 'bg-dark-bg' : 'bg-primary-navy'
+                } text-white`}>
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">Date/Time</th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">User</th>
@@ -169,19 +229,27 @@ const ActivityLogs: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase">IP Address</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className={`divide-y transition-colors duration-200 ${
+                  theme === 'dark' ? 'divide-dark-border' : 'divide-gray-200'
+                }`}>
                   {logs.map((log, index) => (
                     <motion.tr
                       key={log.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.02 }}
-                      className="hover:bg-gray-50"
+                      className={`transition-colors duration-200 ${
+                        theme === 'dark' ? 'hover:bg-dark-bg' : 'hover:bg-gray-50'
+                      }`}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm transition-colors duration-200 ${
+                        theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                      }`}>
                         {format(new Date(log.created_at), 'MMM dd, yyyy HH:mm')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm transition-colors duration-200 ${
+                        theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                      }`}>
                         {log.user_name || log.user_email || 'Unknown'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -189,13 +257,19 @@ const ActivityLogs: React.FC = () => {
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm transition-colors duration-200 ${
+                        theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                      }`}>
                         {log.resource_type}
                       </td>
-                      <td className="px-6 py-4 text-sm text-steel max-w-xs truncate">
-                        {JSON.stringify(log.details)}
+                      <td className={`px-6 py-4 text-sm max-w-xs truncate transition-colors duration-200 ${
+                        theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                      }`}>
+                        {typeof log.details === 'object' ? JSON.stringify(log.details) : log.details || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm transition-colors duration-200 ${
+                        theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
+                      }`}>
                         {log.ip_address || 'N/A'}
                       </td>
                     </motion.tr>
