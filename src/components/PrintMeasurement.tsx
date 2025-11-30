@@ -7,6 +7,11 @@ interface PrintMeasurementProps {
 
 const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
   const { settings } = useSettings();
+  
+  if (!measurement) {
+    return null;
+  }
+  
   const systemName = settings.name || 'FitTrack';
   const customerName = measurement?.customer_name || 'Customer';
 
