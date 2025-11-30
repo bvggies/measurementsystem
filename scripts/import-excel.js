@@ -137,8 +137,13 @@ async function importExcel() {
         
         // Create measurement
         // Use a default user ID (you may need to adjust this)
-        const defaultUserId = await client.query('SELECT id FROM users WHERE role = $1 LIMIT 1', ['admin']);
-        const userId = defaultUserId.rows[0]?.id || null;
+        let userId = null;
+        try {
+          const defaultUserId = await client.query('SELECT id FROM users WHERE role = $1 LIMIT 1', ['admin']);
+          userId = defaultUserId.rows[0]?.id || null;
+        } catch (err) {
+          console.log('Could not get default user, continuing without created_by');
+        }
         
         await client.query(
           `INSERT INTO measurements (
@@ -166,8 +171,8 @@ async function importExcel() {
             measurementData.trouser_knee,
             measurementData.trouser_length,
             measurementData.trouser_bars,
-            measurementData.additional_info,
-            measurementData.branch,
+            measurementData.additional_info || null,
+            measurementData.branch || null,
           ]
         );
         
