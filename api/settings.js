@@ -15,7 +15,7 @@ async function getSettings(req, res) {
       `SELECT * FROM system_settings ORDER BY id DESC LIMIT 1`
     );
 
-    if (settings.length === 0) {
+    if (settings.length === 0 || !settings[0].settings) {
       // Return default settings if none exist
       return res.status(200).json({
         name: 'FitTrack',
