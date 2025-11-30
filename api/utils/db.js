@@ -48,5 +48,20 @@ const query = async (text, params) => {
   }
 };
 
-module.exports = { query, initDb, getDb };
+const transaction = async (callback) => {
+  const db = getDb();
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
 
+module.exports = { query, initDb, getDb, transaction };
