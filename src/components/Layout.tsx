@@ -7,6 +7,7 @@ import GlobalSearch from './GlobalSearch';
 import BottomNav from './BottomNav';
 import InstallButton from './InstallButton';
 import ThemeToggle from './ThemeToggle';
+import Footer from './Footer';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -154,8 +155,11 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8 pb-32 sm:pb-36">
-          <Outlet />
+        <main className="p-4 lg:p-8 pb-32 sm:pb-36 min-h-screen flex flex-col">
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </div>
 
