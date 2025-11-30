@@ -51,22 +51,12 @@ async function getActivityLogs(req, res) {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    // Get total count - try activity_logs first, fallback to audit_logs
-    let countResult;
-    let tableName = 'activity_logs';
-    try {
-      countResult = await query(
-        `SELECT COUNT(*) as total FROM activity_logs al ${whereClause}`,
-        params
-      );
-    } catch (err) {
-      // Fallback to audit_logs if activity_logs doesn't exist
-      tableName = 'audit_logs';
-      countResult = await query(
-        `SELECT COUNT(*) as total FROM audit_logs al ${whereClause}`,
-        params
-      );
-    }
+    // Use audit_logs table (as per schema)
+    const tableName = 'audit_logs';
+    const countResult = await query(
+      `SELECT COUNT(*) as total FROM ${tableName} al ${whereClause}`,
+      params
+    );
     const total = parseInt(countResult[0]?.total || 0);
     const totalPages = Math.ceil(total / limit);
 
