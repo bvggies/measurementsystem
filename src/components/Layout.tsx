@@ -153,6 +153,9 @@ const Layout: React.FC = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+      
+      {/* Floating Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };
