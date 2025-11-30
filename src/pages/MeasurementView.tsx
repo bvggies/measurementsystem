@@ -49,26 +49,27 @@ const MeasurementView: React.FC = () => {
   }, [fetchMeasurement]);
 
   const handlePrint = () => {
-    // Set document title for print
+    if (!measurement) return;
+    
+    // Set document title for print - this will be used as the suggested filename when saving as PDF
     const systemName = settings.name || 'FitTrack';
     const customerName = measurement?.customer_name || 'Measurement';
     const entryId = measurement?.entry_id || '';
-    document.title = `${systemName} - ${customerName} - ${entryId}`;
+    const sanitizedCustomerName = customerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const sanitizedEntryId = entryId.replace(/[^a-z0-9]/gi, '_');
+    const sanitizedSystemName = systemName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    const originalTitle = document.title;
+    // Set title that will be used as PDF filename (browsers use document.title as default filename)
+    document.title = `${sanitizedSystemName}_${sanitizedCustomerName}_${sanitizedEntryId}`;
     
     // Trigger print
     window.print();
     
-    // After print, trigger download/save
+    // Restore original title after print dialog
     setTimeout(() => {
-      // Generate filename
-      const sanitizedCustomerName = (customerName || 'Measurement').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const sanitizedEntryId = (entryId || Date.now().toString()).replace(/[^a-z0-9]/gi, '_');
-      const filename = `${systemName}_${sanitizedCustomerName}_${sanitizedEntryId}.pdf`;
-      
-      // Note: Actual PDF generation would require a library like jsPDF or html2pdf
-      // For now, the browser's print dialog will allow saving as PDF
-      console.log('Print completed. Suggested filename:', filename);
-    }, 100);
+      document.title = originalTitle;
+    }, 1000);
   };
 
   if (loading) {
