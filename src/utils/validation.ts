@@ -67,6 +67,7 @@ const validateMeasurementField = (
     };
   }
 
+  // Allow any positive number - no range restrictions
   if (value < 0) {
     return {
       field,
@@ -74,18 +75,7 @@ const validateMeasurementField = (
     };
   }
 
-  const ranges = unit === 'cm' ? MEASUREMENT_RANGES_CM : MEASUREMENT_RANGES_IN;
-  const range = ranges[field];
-
-  if (range) {
-    if (value < range.min || value > range.max) {
-      return {
-        field,
-        message: `${field} must be between ${range.min} and ${range.max} ${unit}`,
-      };
-    }
-  }
-
+  // Removed range validation to allow any number input
   return null;
 };
 
@@ -109,32 +99,8 @@ export const validateMeasurement = (
     });
   }
 
-  // Validate at least one measurement field is provided
-  const measurementFields = [
-    'across_back',
-    'chest',
-    'sleeve_length',
-    'around_arm',
-    'neck',
-    'top_length',
-    'wrist',
-    'trouser_waist',
-    'trouser_thigh',
-    'trouser_knee',
-    'trouser_length',
-    'trouser_bars',
-  ];
-
-  const hasAnyMeasurement = measurementFields.some(
-    (field) => measurement[field] != null && measurement[field] !== ''
-  );
-
-  if (!hasAnyMeasurement) {
-    errors.push({
-      field: 'measurements',
-      message: 'At least one measurement field is required',
-    });
-  }
+  // Allow submission without measurements - measurements are optional
+  // Removed requirement for at least one measurement field
 
   // Validate each measurement field
   measurementFields.forEach((field) => {

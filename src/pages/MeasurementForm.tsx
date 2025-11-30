@@ -108,11 +108,12 @@ const MeasurementForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setErrors([]);
 
-    const validation = validateMeasurement(data, data.units);
-    if (!validation.isValid) {
-      setErrors(validation.errors);
+    // Basic validation - only check for required client info
+    if (!data.client_name?.trim() && !data.client_phone?.trim()) {
+      setErrors([{ field: 'client_info', message: 'Either client name or phone number is required' }]);
       return;
     }
 
@@ -125,7 +126,9 @@ const MeasurementForm: React.FC = () => {
       }
       navigate('/measurements');
     } catch (error: any) {
-      setErrors([{ field: 'general', message: error.response?.data?.error || 'Failed to save' }]);
+      console.error('Save error:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to save measurement';
+      setErrors([{ field: 'general', message: errorMessage }]);
     } finally {
       setSaving(false);
     }
@@ -180,23 +183,21 @@ const MeasurementForm: React.FC = () => {
           <h2 className="text-xl font-bold text-primary-navy mb-4 border-b border-steel-light pb-2">Client Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Name *</label>
+              <label className="block text-sm font-medium text-steel mb-2">Name</label>
               <input
                 type="text"
                 value={data.client_name}
                 onChange={(e) => updateField('client_name', e.target.value)}
                 className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
-                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Phone *</label>
+              <label className="block text-sm font-medium text-steel mb-2">Phone</label>
               <input
                 type="text"
                 value={data.client_phone}
                 onChange={(e) => updateField('client_phone', e.target.value)}
                 className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
-                required
               />
             </div>
             <div>

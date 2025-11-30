@@ -14,11 +14,18 @@ const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
     <>
       <div className="hidden print:block">
         <div className="p-8">
-          <div className="mb-8 text-center">
-            <img src={settings.logo || "/applogo.png"} alt={systemName} className="h-16 w-16 mx-auto mb-4" />
+          <div className="mb-8 text-center border-b pb-4">
+            <img src={settings.logo || "/applogo.png"} alt={systemName} className="h-20 w-20 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-primary-navy">{systemName}</h1>
-            <p className="text-steel">{settings.tagline || 'Measurement Record'}</p>
-            <p className="text-sm text-steel mt-2">Customer: {customerName}</p>
+            <p className="text-steel font-medium">{settings.tagline || 'Measurement Record'}</p>
+            {(settings.address || settings.phone || settings.email) && (
+              <div className="mt-3 text-sm text-steel space-y-1">
+                {settings.address && <p>{settings.address}</p>}
+                {settings.phone && <p>Phone: {settings.phone}</p>}
+                {settings.email && <p>Email: {settings.email}</p>}
+              </div>
+            )}
+            <p className="text-sm text-primary-navy font-medium mt-3">Customer: {customerName}</p>
           </div>
 
           <div className="mb-6">
