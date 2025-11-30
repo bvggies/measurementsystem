@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MeasurementsList from './pages/MeasurementsList';
@@ -103,16 +104,31 @@ function App() {
       easing: 'ease-in-out',
       once: true,
     });
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
   }, []);
 
   return (
-    <AuthProvider>
-      <SettingsProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </SettingsProvider>
-    </AuthProvider>
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <SettingsProvider>
+            <AppRoutes />
+          </SettingsProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
   );
 }
 

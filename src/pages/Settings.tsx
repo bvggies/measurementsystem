@@ -73,11 +73,18 @@ const Settings: React.FC = () => {
     setSuccess('');
 
     try {
-      await updateSettings(formData);
+      // Ensure all required fields are present
+      const settingsToSave = {
+        ...formData,
+        colors: formData.colors || settings.colors,
+      };
+      await updateSettings(settingsToSave);
       setSuccess('Settings saved successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save settings');
+      console.error('Settings save error:', err);
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to save settings';
+      setError(errorMsg);
     } finally {
       setSaving(false);
     }

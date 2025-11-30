@@ -5,7 +5,7 @@
  */
 
 const { query } = require('./utils/db');
-const { requireRole } = require('./utils/auth');
+const { requireAuth } = require('./utils/auth');
 
 // GET /api/settings
 async function getSettings(req, res) {
@@ -76,7 +76,13 @@ async function getSettings(req, res) {
 // PUT /api/settings
 async function updateSettings(req, res) {
   try {
-    const user = requireRole(['admin'])(req); // Only admin can update settings
+    const { requireAuth } = require('./utils/auth');
+    const user = requireAuth(req);
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can update settings' });
+    }
 
     const settings = req.body;
 

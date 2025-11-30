@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import GlobalSearch from './GlobalSearch';
 import BottomNav from './BottomNav';
+import InstallButton from './InstallButton';
+import ThemeToggle from './ThemeToggle';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -28,8 +31,12 @@ const Layout: React.FC = () => {
     navigate('/login');
   };
 
+  const { theme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen transition-colors duration-200 ${
+      theme === 'dark' ? 'bg-dark-bg text-dark-text' : 'bg-gray-50'
+    }`}>
       {/* Mobile sidebar */}
       <motion.div
         initial={false}
@@ -141,7 +148,7 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8 pb-24 sm:pb-28">
+        <main className="p-4 lg:p-8 pb-32 sm:pb-36">
           <Outlet />
         </main>
       </div>
@@ -156,6 +163,9 @@ const Layout: React.FC = () => {
       
       {/* Floating Bottom Navigation */}
       <BottomNav />
+      
+      {/* PWA Install Button */}
+      <InstallButton />
     </div>
   );
 };

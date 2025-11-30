@@ -75,8 +75,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updateSettings = async (newSettings: Partial<SystemSettings>) => {
     try {
       const updated = { ...settings, ...newSettings };
-      await axios.put('/api/settings', updated);
-      setSettings(updated);
+      const response = await axios.put('/api/settings', updated);
+      // Use response data if available, otherwise use updated
+      const finalSettings = response.data?.settings || updated;
+      setSettings(finalSettings);
       
       // Update document title
       if (newSettings.websiteTitle) {

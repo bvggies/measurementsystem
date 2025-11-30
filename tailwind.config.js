@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
@@ -15,11 +16,17 @@ module.exports = {
           success: '#00A68C', // Emerald Green
           error: '#E43F52', // Crimson Edge
         },
-        navy: '#0D2136',
-        gold: '#D4A643',
+        'primary-navy': '#0D2136',
+        'primary-gold': '#D4A643',
         steel: '#586577',
+        'soft-white': '#FAFAFA',
         emerald: '#00A68C',
         crimson: '#E43F52',
+        // Dark mode colors
+        'dark-bg': '#1a1a1a',
+        'dark-surface': '#2d2d2d',
+        'dark-text': '#e5e5e5',
+        'dark-border': '#404040',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in',

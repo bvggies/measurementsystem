@@ -2,10 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   const navItems = [
     { path: '/dashboard', icon: '📊', label: 'Dashboard', roles: ['admin', 'manager', 'tailor'] },
@@ -30,7 +32,11 @@ const BottomNav: React.FC = () => {
       className="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-4"
     >
       <div
-        className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 w-full max-w-2xl"
+        className={`${
+          theme === 'dark' 
+            ? 'bg-dark-surface/90 border-dark-border' 
+            : 'bg-white/90 border-white/20'
+        } backdrop-blur-lg rounded-2xl shadow-2xl border w-full max-w-2xl`}
         style={{
           boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
         }}
@@ -47,11 +53,13 @@ const BottomNav: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-2 sm:px-3 md:px-4 py-2 rounded-xl transition-all duration-200 ${
-                    active
-                      ? 'bg-primary-navy text-white'
-                      : 'text-steel hover:bg-white/50'
-                  }`}
+                    className={`px-2 sm:px-3 md:px-4 py-2 rounded-xl transition-all duration-200 ${
+                      active
+                        ? 'bg-primary-navy text-white'
+                        : theme === 'dark'
+                        ? 'text-gray-300 hover:bg-dark-border/50'
+                        : 'text-steel hover:bg-white/50'
+                    }`}
                 >
                   <div className="flex flex-col items-center gap-0.5 sm:gap-1">
                     <span className="text-lg sm:text-xl">{item.icon}</span>
