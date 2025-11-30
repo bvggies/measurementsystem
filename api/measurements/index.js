@@ -146,7 +146,15 @@ async function createMeasurement(req, res) {
 
     const data = req.body;
 
-    // Validate measurement
+    // Basic validation - only check for required client info
+    if (!data.client_name?.trim() && !data.client_phone?.trim()) {
+      return res.status(400).json({
+        error: 'Either client name or phone number is required',
+        errors: [{ field: 'client_info', message: 'Either client name or phone number is required' }],
+      });
+    }
+
+    // Validate measurement fields (but don't require any)
     const validation = validateMeasurement(data, data.units || 'cm');
     if (!validation.isValid) {
       return res.status(400).json({
