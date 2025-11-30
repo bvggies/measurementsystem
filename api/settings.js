@@ -94,24 +94,48 @@ async function updateSettings(req, res) {
 
     const settings = req.body;
 
-    // Check if settings exist
-    const existing = await query('SELECT id FROM system_settings ORDER BY id DESC LIMIT 1');
+    // Validate settings object
+    if (!settings || typeof settings !== 'object') {
+      return res.status(400).json({ error: 'Invalid settings data' });
+    }
 
-    if (existing.length > 0) {
-      // Update existing settings
-      await query(
-        `UPDATE system_settings 
-         SET settings = $1, updated_at = CURRENT_TIMESTAMP, updated_by = $2
-         WHERE id = $3`,
-        [JSON.stringify(settings), user.userId, existing[0].id]
-      );
-    } else {
-      // Create new settings
-      await query(
-        `INSERT INTO system_settings (settings, created_by, updated_by)
-         VALUES ($1, $2, $2)`,
-        [JSON.stringify(settings), user.userId]
-      );
+    // Check if settings exist
+    let existing = [];
+    try {
+      existing = await query('SELECT id FROM system_settings ORDER BY id DESC LIMIT 1');
+    } catch (dbError) {
+      console.error('Database error checking existing settings:', dbError);
+      return res.status(500).json({
+        error: 'Database error',
+        message: dbError.message || 'Failed to check existing settings',
+        details: process.env.NODE_ENV === 'development' ? dbError.stack : undefined
+      });
+    }
+
+    try {
+      if (existing.length > 0) {
+        // Update existing settings
+        await query(
+          `UPDATE system_settings 
+           SET settings = $1, updated_at = CURRENT_TIMESTAMP, updated_by = $2
+           WHERE id = $3`,
+          [JSON.stringify(settings), user.userId, existing[0].id]
+        );
+      } else {
+        // Create new settings
+        await query(
+          `INSERT INTO system_settings (settings, created_by, updated_by)
+           VALUES ($1, $2, $2)`,
+          [JSON.stringify(settings), user.userId]
+        );
+      }
+    } catch (dbError) {
+      console.error('Database error saving settings:', dbError);
+      return res.status(500).json({
+        error: 'Database error',
+        message: dbError.message || 'Failed to save settings',
+        details: process.env.NODE_ENV === 'development' ? dbError.stack : undefined
+      });
     }
 
     // Log activity
