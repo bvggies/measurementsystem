@@ -4,6 +4,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MeasurementsList from './pages/MeasurementsList';
@@ -104,9 +105,11 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
+      <SettingsProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

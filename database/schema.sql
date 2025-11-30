@@ -225,3 +225,13 @@ CREATE TRIGGER measurement_history_trigger
     WHEN (OLD.* IS DISTINCT FROM NEW.*)
     EXECUTE FUNCTION create_measurement_history();
 
+-- System Settings table
+CREATE TABLE IF NOT EXISTS system_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    settings JSONB NOT NULL DEFAULT '{}',
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

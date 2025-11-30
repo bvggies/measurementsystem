@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import GlobalSearch from './GlobalSearch';
+import BottomNav from './BottomNav';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
