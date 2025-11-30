@@ -12,6 +12,7 @@ import MeasurementForm from './pages/MeasurementForm';
 import MeasurementView from './pages/MeasurementView';
 import ImportPage from './pages/ImportPage';
 import CustomersList from './pages/CustomersList';
+import CustomerView from './pages/CustomerView';
 import OrdersList from './pages/OrdersList';
 import Calendar from './pages/Calendar';
 import Settings from './pages/Settings';
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="measurements/edit/:id" element={<MeasurementForm />} />
         <Route path="import" element={<ProtectedRoute allowedRoles={['admin']}><ImportPage /></ProtectedRoute>} />
         <Route path="customers" element={<CustomersList />} />
+        <Route path="customers/:id" element={<CustomerView />} />
         <Route path="orders" element={<OrdersList />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="settings" element={<Settings />} />
