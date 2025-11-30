@@ -101,15 +101,39 @@ export const validateMeasurement = (
 
   // Allow submission without measurements - measurements are optional
   // Removed requirement for at least one measurement field
+  
+  // Validate each measurement field (but don't require any)
+  const measurementFields = [
+    'across_back',
+    'chest',
+    'sleeve_length',
+    'around_arm',
+    'neck',
+    'top_length',
+    'wrist',
+    'trouser_waist',
+    'trouser_thigh',
+    'trouser_knee',
+    'trouser_length',
+    'trouser_bars',
+  ];
 
-  // Validate each measurement field
+  // Only validate fields that are provided - allow any positive number
   measurementFields.forEach((field) => {
     const value = measurement[field];
     if (value != null && value !== '') {
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
-      const error = validateMeasurementField(field, numValue, unit);
-      if (error) {
-        errors.push(error);
+      // Only check if it's a valid number and positive - no range restrictions
+      if (typeof numValue !== 'number' || isNaN(numValue)) {
+        errors.push({
+          field,
+          message: `${field} must be a valid number`,
+        });
+      } else if (numValue < 0) {
+        errors.push({
+          field,
+          message: `${field} must be positive`,
+        });
       }
     }
   });
