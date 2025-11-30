@@ -27,10 +27,10 @@ const BottomNav: React.FC = () => {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4"
+      className="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-4"
     >
       <div
-        className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 mx-auto"
+        className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 w-full max-w-2xl"
         style={{
           boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
         }}
