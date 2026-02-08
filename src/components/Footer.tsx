@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { motion } from 'framer-motion';
 
 const Footer: React.FC = () => {
   const { settings } = useSettings();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
@@ -24,7 +24,6 @@ interface Order {
 const OrdersList: React.FC = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
-  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

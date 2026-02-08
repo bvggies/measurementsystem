@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSettings } from '../contexts/SettingsContext';
 import { useAuth } from '../contexts/AuthContext';
-import axios from '../utils/api';
 
 const Settings: React.FC = () => {
   const { settings, updateSettings, loading: settingsLoading } = useSettings();

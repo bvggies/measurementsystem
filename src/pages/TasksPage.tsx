@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
@@ -30,11 +30,7 @@ const TasksPage: React.FC = () => {
   const isDark = theme === 'dark';
   const cardBg = isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200';
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/tasks');
@@ -45,7 +41,11 @@ const TasksPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const updateStatus = async (id: string, status: string) => {
     try {

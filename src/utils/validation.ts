@@ -13,9 +13,9 @@ export interface ValidationResult {
 }
 
 /**
- * Measurement field ranges in cm
+ * Measurement field ranges in cm (exported for future use)
  */
-const MEASUREMENT_RANGES_CM: Record<string, { min: number; max: number }> = {
+export const MEASUREMENT_RANGES_CM: Record<string, { min: number; max: number }> = {
   across_back: { min: 20, max: 80 },
   chest: { min: 50, max: 200 },
   sleeve_length: { min: 20, max: 100 },
@@ -31,9 +31,9 @@ const MEASUREMENT_RANGES_CM: Record<string, { min: number; max: number }> = {
 };
 
 /**
- * Measurement field ranges in inches
+ * Measurement field ranges in inches (exported for future use)
  */
-const MEASUREMENT_RANGES_IN: Record<string, { min: number; max: number }> = {
+export const MEASUREMENT_RANGES_IN: Record<string, { min: number; max: number }> = {
   across_back: { min: 8, max: 32 },
   chest: { min: 20, max: 80 },
   sleeve_length: { min: 8, max: 40 },
@@ -49,9 +49,9 @@ const MEASUREMENT_RANGES_IN: Record<string, { min: number; max: number }> = {
 };
 
 /**
- * Validate a single numeric measurement field
+ * Validate a single numeric measurement field (exported for future use)
  */
-const validateMeasurementField = (
+export const validateMeasurementField = (
   field: string,
   value: number | null | undefined,
   unit: 'cm' | 'in'

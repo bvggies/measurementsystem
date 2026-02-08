@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
@@ -17,7 +17,6 @@ interface MeasurementProfile {
 
 const CustomerView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [customer, setCustomer] = useState<any>(null);
   const [profiles, setProfiles] = useState<MeasurementProfile[]>([]);

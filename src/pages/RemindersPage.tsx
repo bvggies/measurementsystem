@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
@@ -30,11 +30,7 @@ const RemindersPage: React.FC = () => {
   const isDark = theme === 'dark';
   const cardBg = isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200';
 
-  useEffect(() => {
-    fetchReminders();
-  }, []);
-
-  const fetchReminders = async () => {
+  const fetchReminders = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get('/api/reminders');
@@ -45,7 +41,11 @@ const RemindersPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchReminders();
+  }, [fetchReminders]);
 
   const markSent = async (id: string) => {
     try {

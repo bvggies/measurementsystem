@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
-import { validateMeasurement, ValidationError } from '../utils/validation';
+import { ValidationError } from '../utils/validation';
 import { convertMeasurementUnits } from '../utils/unitConversion';
 import PrintMeasurement from '../components/PrintMeasurement';
 import { useAuth } from '../contexts/AuthContext';
