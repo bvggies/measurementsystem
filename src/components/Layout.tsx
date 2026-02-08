@@ -7,6 +7,7 @@ import GlobalSearch from './GlobalSearch';
 import BottomNav from './BottomNav';
 import InstallButton from './InstallButton';
 import ThemeToggle from './ThemeToggle';
+import NotificationsDropdown from './NotificationsDropdown';
 import Footer from './Footer';
 
 const Layout: React.FC = () => {
@@ -23,6 +24,11 @@ const Layout: React.FC = () => {
     { name: 'Orders', href: '/orders', icon: '📦', roles: ['admin', 'manager', 'tailor'] },
     { name: 'Calendar', href: '/calendar', icon: '📅', roles: ['admin', 'manager', 'tailor'] },
     { name: 'Activity Logs', href: '/activity-logs', icon: '📋', roles: ['admin', 'manager'] },
+    { name: 'Approval Queue', href: '/approval', icon: '✅', roles: ['admin', 'manager', 'tailor'] },
+    { name: 'Tasks', href: '/tasks', icon: '📌', roles: ['admin', 'manager', 'tailor'] },
+    { name: 'Reminders', href: '/reminders', icon: '⏰', roles: ['admin', 'manager', 'tailor'] },
+    { name: 'Expiry Rules', href: '/expiry-rules', icon: '📆', roles: ['admin', 'manager'] },
+    { name: 'Compare', href: '/measurements/compare', icon: '↔️', roles: ['admin', 'manager', 'tailor'] },
     { name: 'Settings', href: '/settings', icon: '⚙️', roles: ['admin', 'manager', 'tailor', 'customer'] },
     { name: 'Admin', href: '/admin', icon: '🔐', roles: ['admin'] },
   ].filter((item) => user && item.roles.includes(user.role));
@@ -38,6 +44,12 @@ const Layout: React.FC = () => {
     <div className={`min-h-screen transition-colors duration-200 ${
       theme === 'dark' ? 'bg-dark-bg text-dark-text' : 'bg-gray-50'
     }`}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-gold focus:text-primary-navy focus:rounded-lg font-medium"
+      >
+        Skip to main content
+      </a>
       {/* Mobile sidebar */}
       <motion.div
         initial={false}
@@ -106,16 +118,16 @@ const Layout: React.FC = () => {
               </Link>
             ))}
           </nav>
-          <div className="p-4 border-t">
+          <div className={`p-4 border-t ${theme === 'dark' ? 'border-dark-border' : ''}`}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="font-medium text-gray-900">{user?.name}</p>
-                <p className="text-sm text-gray-500">{user?.role}</p>
+                <p className={`font-medium ${theme === 'dark' ? 'text-dark-text' : 'text-gray-900'}`}>{user?.name}</p>
+                <p className={`text-sm capitalize ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{user?.role}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-crimson rounded-lg hover:bg-opacity-90 transition-colors"
+              className="w-full px-4 py-2.5 text-sm font-medium text-white bg-crimson rounded-xl hover:bg-crimson/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 transition"
             >
               Logout
             </button>
@@ -140,6 +152,7 @@ const Layout: React.FC = () => {
               <GlobalSearch />
             </div>
             <div className="flex items-center space-x-3">
+              <NotificationsDropdown />
               <div className="group relative">
                 <ThemeToggle />
               </div>
@@ -163,7 +176,7 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8 pb-32 sm:pb-36">
+        <main id="main-content" className="p-4 lg:p-8 pb-32 sm:pb-36" tabIndex={-1}>
           <Outlet />
         </main>
         

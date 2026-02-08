@@ -7,6 +7,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/orders/:id
 async function getOrder(req, res) {
@@ -81,16 +82,7 @@ async function updateOrder(req, res) {
       ]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'update', 'order', $2, $3)`,
-        [user.userId, id, JSON.stringify({ changes: Object.keys(data) })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'update', 'order', id, { changes: Object.keys(data) });
 
     return res.status(200).json({ message: 'Order updated successfully' });
   } catch (error) {
@@ -124,16 +116,7 @@ async function deleteOrder(req, res) {
     // Delete order
     await query('DELETE FROM orders WHERE id = $1', [id]);
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'delete', 'order', $2, $3)`,
-        [user.userId, id, JSON.stringify({ deleted: true })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'delete', 'order', id, { deleted: true });
 
     return res.status(200).json({
       message: 'Order deleted successfully',

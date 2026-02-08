@@ -7,6 +7,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/customers/:id
 async function getCustomer(req, res) {
@@ -155,16 +156,7 @@ async function updateCustomer(req, res) {
       [name, phone, email, address, id]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'update', 'customer', $2, $3)`,
-        [user.userId, id, JSON.stringify({ changes: Object.keys(req.body) })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'update', 'customer', id, { changes: Object.keys(req.body) });
 
     return res.status(200).json(result[0]);
   } catch (error) {
@@ -206,16 +198,7 @@ async function deleteCustomer(req, res) {
 
     await query('DELETE FROM customers WHERE id = $1', [id]);
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'delete', 'customer', $2, $3)`,
-        [user.userId, id, JSON.stringify({ name: existing[0].name })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'delete', 'customer', id, { name: existing[0].name });
 
     return res.status(200).json({ message: 'Customer deleted successfully' });
   } catch (error) {

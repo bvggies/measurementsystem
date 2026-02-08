@@ -56,6 +56,9 @@ CREATE TABLE IF NOT EXISTS measurements (
     additional_info TEXT,
     branch TEXT,
     version INTEGER DEFAULT 1,
+    fit_preference TEXT CHECK (fit_preference IN ('slim', 'regular', 'loose', 'custom')),
+    profile_id UUID,
+    template_id UUID,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -234,4 +237,17 @@ CREATE TABLE IF NOT EXISTS system_settings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Shareable form tokens (for public measurement forms via /form/:token)
+CREATE TABLE IF NOT EXISTS shareable_tokens (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    token TEXT UNIQUE NOT NULL,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    expires_at TIMESTAMP,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_shareable_tokens_token ON shareable_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_shareable_tokens_created_by ON shareable_tokens(created_by);
 

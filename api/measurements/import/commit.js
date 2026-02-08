@@ -6,6 +6,7 @@
 
 const { query, transaction } = require('../../../utils/db');
 const { requireRole } = require('../../../utils/auth');
+const { logAudit } = require('../../../utils/audit');
 
 // Note: processImportRows and autoMapColumns would need to be converted to JS
 // For now, we'll handle basic validation inline
@@ -162,16 +163,11 @@ module.exports = async (req, res) => {
       console.log('Could not update import record:', err.message);
     }
 
-    // Log audit
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'import', 'import', $2, $3)`,
-        [user.userId, importRecordId, JSON.stringify({ fileName, successCount, failedCount: invalidRows.length + errors.length })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'import', 'import', importRecordId, {
+      fileName,
+      successCount,
+      failedCount: invalidRows.length + errors.length,
+    });
 
     return res.status(200).json({
       importId: importRecordId,

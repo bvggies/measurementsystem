@@ -6,6 +6,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/customers
 async function getCustomers(req, res) {
@@ -135,17 +136,7 @@ async function createCustomer(req, res) {
       [name, phone || null, email || null, address || null]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'create', 'customer', $2, $3)`,
-        [user.userId, result[0].id, JSON.stringify({ name })]
-      );
-    } catch (err) {
-      // activity_logs table might not exist, that's okay
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'create', 'customer', result[0].id, { name });
 
     return res.status(201).json(result[0]);
   } catch (error) {

@@ -16,24 +16,28 @@ const pool = new Pool({
   },
 });
 
+const SCHEMA_FILES = ['schema.sql', 'schema_updates.sql', 'schema_enhancements.sql'];
+
 async function setupDatabase() {
   try {
     console.log('Connecting to database...');
-    
-    // Read schema SQL file
-    const schemaPath = path.join(__dirname, '../database/schema.sql');
-    const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
 
-    console.log('Running schema SQL...');
-    
-    // Execute schema SQL
-    await pool.query(schemaSQL);
+    for (const file of SCHEMA_FILES) {
+      const schemaPath = path.join(__dirname, '../database', file);
+      if (!fs.existsSync(schemaPath)) {
+        console.log(`Skipping ${file} (not found).`);
+        continue;
+      }
+      const sql = fs.readFileSync(schemaPath, 'utf-8');
+      console.log(`Running ${file}...`);
+      await pool.query(sql);
+      console.log(`  ✓ ${file} done.`);
+    }
 
-    console.log('✅ Database schema created successfully!');
+    console.log('\n✅ Database schema and migrations applied successfully!');
     console.log('\nNext steps:');
     console.log('1. Run: npm run seed (to import CSV data)');
     console.log('2. Or create an admin user manually in the database');
-    
   } catch (error) {
     console.error('❌ Error setting up database:', error.message);
     if (error.code === '42P07') {

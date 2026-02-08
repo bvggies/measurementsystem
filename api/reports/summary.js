@@ -67,13 +67,64 @@ module.exports = async (req, res) => {
     const activityResult = await query(activityQuery, activityParams);
     const recentActivity = parseInt(activityResult[0]?.count || '0', 10);
 
-    return res.status(200).json({
+    const response = {
       totalCustomers,
       totalMeasurements,
       newEntries,
       pendingFittings,
       recentActivity,
-    });
+    };
+
+    // Tailor performance stats (admin/manager only)
+    if (user.role === 'admin' || user.role === 'manager') {
+      try {
+        const tailorRows = await query(
+          `SELECT u.id, u.name, u.email,
+            COUNT(m.id) as measurements_count,
+            COUNT(CASE WHEN m.updated_at > m.created_at THEN 1 END) as updates_count
+           FROM users u
+           LEFT JOIN measurements m ON m.created_by = u.id
+           WHERE u.role = 'tailor'
+           GROUP BY u.id, u.name, u.email
+           ORDER BY measurements_count DESC`
+        );
+        response.tailorStats = tailorRows || [];
+      } catch (e) {
+        response.tailorStats = [];
+      }
+
+      // Customer growth: new in last 30d vs had measurement before
+      try {
+        const newCust = await query(
+          'SELECT COUNT(*) as c FROM customers WHERE created_at >= $1',
+          [thirtyDaysAgo]
+        );
+        const returningQuery = await query(
+          `SELECT COUNT(DISTINCT customer_id) as c FROM measurements WHERE created_at < $1`,
+          [thirtyDaysAgo]
+        );
+        response.customerGrowth = {
+          newCustomersLast30Days: parseInt(newCust[0]?.c || '0', 10),
+          returningCustomersWithMeasurements: parseInt(returningQuery[0]?.c || '0', 10),
+        };
+      } catch (e) {
+        response.customerGrowth = { newCustomersLast30Days: 0, returningCustomersWithMeasurements: 0 };
+      }
+
+      // Measurement trends: simple avg of key fields (last 30d)
+      try {
+        const trendRows = await query(
+          `SELECT AVG(chest) as avg_chest, AVG(trouser_waist) as avg_waist, AVG(neck) as avg_neck
+           FROM measurements WHERE created_at >= $1 AND (chest IS NOT NULL OR trouser_waist IS NOT NULL OR neck IS NOT NULL)`,
+          [thirtyDaysAgo]
+        );
+        response.measurementTrends = trendRows[0] || { avg_chest: null, avg_waist: null, avg_neck: null };
+      } catch (e) {
+        response.measurementTrends = { avg_chest: null, avg_waist: null, avg_neck: null };
+      }
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Summary error:', error);
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {

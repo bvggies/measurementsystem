@@ -6,11 +6,13 @@ import 'aos/dist/aos.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import MeasurementsList from './pages/MeasurementsList';
 import MeasurementForm from './pages/MeasurementForm';
 import MeasurementView from './pages/MeasurementView';
+import MeasurementComparison from './pages/MeasurementComparison';
 import ImportPage from './pages/ImportPage';
 import CustomersList from './pages/CustomersList';
 import CustomerView from './pages/CustomerView';
@@ -20,6 +22,10 @@ import Settings from './pages/Settings';
 import AdminPanel from './pages/AdminPanel';
 import ShareableForm from './pages/ShareableForm';
 import ActivityLogs from './pages/ActivityLogs';
+import ApprovalQueue from './pages/ApprovalQueue';
+import TasksPage from './pages/TasksPage';
+import RemindersPage from './pages/RemindersPage';
+import ExpiryRulesPage from './pages/ExpiryRulesPage';
 import Layout from './components/Layout';
 
 // Protected Route Component
@@ -69,6 +75,7 @@ function AppRoutes() {
         <Route path="measurements" element={<MeasurementsList />} />
         <Route path="measurements/new" element={<MeasurementForm />} />
         <Route path="measurements/view/:id" element={<MeasurementView />} />
+        <Route path="measurements/compare" element={<MeasurementComparison />} />
         <Route path="measurements/edit/:id" element={<MeasurementForm />} />
         <Route path="import" element={<ProtectedRoute allowedRoles={['admin']}><ImportPage /></ProtectedRoute>} />
         <Route path="customers" element={<CustomersList />} />
@@ -81,6 +88,38 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'manager']}>
               <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="approval"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager', 'tailor']}>
+              <ApprovalQueue />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="tasks"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager', 'tailor']}>
+              <TasksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="reminders"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager', 'tailor']}>
+              <RemindersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="expiry-rules"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'manager']}>
+              <ExpiryRulesPage />
             </ProtectedRoute>
           }
         />
@@ -151,7 +190,9 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <SettingsProvider>
-            <AppRoutes />
+            <ToastProvider>
+              <AppRoutes />
+            </ToastProvider>
           </SettingsProvider>
         </AuthProvider>
       </ThemeProvider>

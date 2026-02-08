@@ -1,6 +1,9 @@
 -- Additional schema updates for FitTrack features
+-- NOTE: shareable_tokens is now included in schema.sql. These statements are kept
+-- for backward compatibility (e.g. existing DBs that ran schema.sql before the merge).
+-- New deployments: run schema.sql only.
 
--- Shareable form tokens table
+-- Shareable form tokens table (also in schema.sql)
 CREATE TABLE IF NOT EXISTS shareable_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     token TEXT UNIQUE NOT NULL,

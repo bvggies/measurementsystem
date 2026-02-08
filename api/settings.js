@@ -6,6 +6,7 @@
 
 const { query } = require('./utils/db');
 const { requireAuth } = require('./utils/auth');
+const { logAudit } = require('./utils/audit');
 
 // GET /api/settings
 async function getSettings(req, res) {
@@ -138,16 +139,7 @@ async function updateSettings(req, res) {
       });
     }
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO audit_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'update', 'settings', $2, $3)`,
-        [user.userId, existing[0]?.id || 'new', JSON.stringify({ updated: Object.keys(settings) })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'update', 'settings', existing[0]?.id || null, { updated: Object.keys(settings) });
 
     return res.status(200).json({ message: 'Settings updated successfully', settings });
   } catch (error) {

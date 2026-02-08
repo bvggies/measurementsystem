@@ -6,6 +6,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/orders
 async function getOrders(req, res) {
@@ -130,16 +131,7 @@ async function createOrder(req, res) {
       ]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'create', 'order', $2, $3)`,
-        [user.userId, result[0].id, JSON.stringify({ status: data.status || 'raw' })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'create', 'order', result[0].id, { status: data.status || 'raw' });
 
     return res.status(201).json({
       id: result[0].id,

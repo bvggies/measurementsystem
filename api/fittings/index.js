@@ -6,6 +6,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/fittings
 async function getFittings(req, res) {
@@ -177,16 +178,7 @@ async function createFitting(req, res) {
       ]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'create', 'fitting', $2, $3)`,
-        [user.userId, result[0].id, JSON.stringify({ scheduled_at, customer_id })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'create', 'fitting', result[0].id, { scheduled_at, customer_id });
 
     return res.status(201).json(result[0]);
   } catch (error) {

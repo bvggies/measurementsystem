@@ -80,3 +80,18 @@ code {
   color: #f3f4f6;
 }
 
+/* Focus visible for accessibility (keyboard nav) */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid #D4A643; /* primary-gold */
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for theme and interactive elements */
+button, a, input, select, textarea {
+  @apply transition-colors duration-200;
+}
+

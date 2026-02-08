@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
 import PrintMeasurement from '../components/PrintMeasurement';
+import MeasurementHistoryTimeline from '../components/MeasurementHistoryTimeline';
+import GarmentFeedback from '../components/GarmentFeedback';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -147,7 +149,7 @@ const MeasurementView: React.FC = () => {
             onClick={handlePrint}
             className="px-4 py-2 bg-steel text-white rounded-lg hover:bg-opacity-90 transition"
           >
-            🖨️ Print
+            🖨️ Print / Save as PDF
           </button>
           {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user.id)) && (
             <Link
@@ -464,6 +466,44 @@ const MeasurementView: React.FC = () => {
             }`}>{measurement.version || 1}</p>
           </div>
         </div>
+      </motion.div>
+
+      {/* Measurement History Timeline */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
+      >
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          theme === 'dark'
+            ? 'text-dark-text border-dark-border'
+            : 'text-primary-navy border-steel-light'
+        }`}>
+          Change history
+        </h2>
+        <MeasurementHistoryTimeline measurementId={id!} />
+      </motion.div>
+
+      {/* Garment outcome feedback */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
+        }`}
+      >
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          theme === 'dark'
+            ? 'text-dark-text border-dark-border'
+            : 'text-primary-navy border-steel-light'
+        }`}>
+          Garment fit feedback
+        </h2>
+        <GarmentFeedback measurementId={id!} />
       </motion.div>
     </div>
   );

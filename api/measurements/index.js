@@ -7,6 +7,7 @@
 const { query, transaction } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { validateMeasurement } = require('../utils/validation');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/measurements
 async function getMeasurements(req, res) {
@@ -209,15 +210,19 @@ async function createMeasurement(req, res) {
       branch = userResult[0]?.branch || null;
     }
 
+    const fitPref = data.fit_preference && ['slim', 'regular', 'loose', 'custom'].includes(data.fit_preference) ? data.fit_preference : null;
+    const profileId = data.profile_id || null;
+    const templateId = data.template_id || null;
+
     // Create measurement
     const result = await query(
       `INSERT INTO measurements (
         customer_id, created_by, entry_id, units,
         across_back, chest, sleeve_length, around_arm, neck, top_length, wrist,
         trouser_waist, trouser_thigh, trouser_knee, trouser_length, trouser_bars,
-        additional_info, branch, version
+        additional_info, branch, version, fit_preference, profile_id, template_id
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 1
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, 1, $19, $20, $21
       ) RETURNING id`,
       [
         customerId,
@@ -238,20 +243,13 @@ async function createMeasurement(req, res) {
         data.trouser_bars || null,
         data.additional_info || null,
         branch,
+        fitPref,
+        profileId,
+        templateId,
       ]
     );
 
-    // Log audit (handle case where activity_logs table might be used instead)
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'create', 'measurement', $2, $3)`,
-        [user.userId, result[0].id, JSON.stringify({ entry_id: entryId })]
-      );
-    } catch (err) {
-      // activity_logs table might not exist or have different structure
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'create', 'measurement', result[0].id, { entry_id: entryId });
 
     return res.status(201).json({
       id: result[0].id,

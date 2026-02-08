@@ -15,6 +15,7 @@ const AdminPanel: React.FC = () => {
   const [tokens, setTokens] = useState<ShareableToken[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [newToken, setNewToken] = useState<ShareableToken | null>(null);
   const [expiresInDays, setExpiresInDays] = useState('30');
 
@@ -56,16 +57,45 @@ const AdminPanel: React.FC = () => {
     alert('Copied to clipboard!');
   };
 
+  const handleBackupExport = async () => {
+    try {
+      setExporting(true);
+      const response = await axios.post('/api/backup/export', {}, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fitrack-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (error: any) {
+      const msg = error.response?.data?.error || error.message || 'Export failed';
+      alert(typeof msg === 'string' ? msg : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-32">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-wrap items-center justify-between gap-4"
       >
         <h1 className={`text-3xl font-bold transition-colors duration-200 ${
           theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
         }`}>Admin Panel</h1>
+        <button
+          type="button"
+          onClick={handleBackupExport}
+          disabled={exporting}
+          className="px-4 py-2 rounded-xl bg-primary-gold text-primary-navy hover:bg-primary-gold/90 disabled:opacity-50 transition-colors"
+        >
+          {exporting ? 'Exporting…' : 'Export backup (JSON)'}
+        </button>
       </motion.div>
 
       {/* Create Shareable Form Link */}

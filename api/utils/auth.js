@@ -4,18 +4,25 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '7d';
 
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (process.env.NODE_ENV === 'production' && (!secret || secret === 'your-secret-key-change-in-production')) {
+    throw new Error('JWT_SECRET must be set in production');
+  }
+  return secret || 'your-secret-key-change-in-production';
+}
+
 const generateToken = (payload) => {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, getJwtSecret(), {
     expiresIn: JWT_EXPIRES_IN,
   });
 };
 
 const verifyToken = (token) => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     return decoded;
   } catch (error) {
     throw new Error('Invalid or expired token');

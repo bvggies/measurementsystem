@@ -7,6 +7,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/fittings/:id
 async function getFitting(req, res) {
@@ -104,16 +105,7 @@ async function updateFitting(req, res) {
       [measurement_id, customer_id, tailor_id, scheduled_at, status, notes, branch, id]
     );
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'update', 'fitting', $2, $3)`,
-        [user.userId, id, JSON.stringify({ changes: Object.keys(req.body) })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'update', 'fitting', id, { changes: Object.keys(req.body) });
 
     return res.status(200).json(result[0]);
   } catch (error) {
@@ -150,16 +142,7 @@ async function deleteFitting(req, res) {
 
     await query('DELETE FROM fittings WHERE id = $1', [id]);
 
-    // Log activity
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'delete', 'fitting', $2, $3)`,
-        [user.userId, id, JSON.stringify({ scheduled_at: existing[0].scheduled_at })]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-    }
+    await logAudit(req, user.userId, 'delete', 'fitting', id, { scheduled_at: existing[0].scheduled_at });
 
     return res.status(200).json({ message: 'Fitting deleted successfully' });
   } catch (error) {

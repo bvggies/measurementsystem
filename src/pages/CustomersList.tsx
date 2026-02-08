@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { SkeletonTable } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 
 interface Customer {
   id: string;
@@ -19,6 +22,7 @@ interface Customer {
 
 const CustomersList: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,13 +81,14 @@ const CustomersList: React.FC = () => {
       try {
         await axios.delete(`/api/customers/${customerId}`);
         await fetchCustomers();
+        toast('Customer deleted successfully', 'success');
       } catch (err: any) {
         const errorMsg = err.response?.data?.error || 'Failed to delete customer';
-        alert(errorMsg);
+        toast(errorMsg, 'error');
         console.error('Delete error:', err);
       }
     }
-  }, [fetchCustomers]);
+  }, [fetchCustomers, toast]);
 
   const handleEdit = (e: React.MouseEvent, customer: Customer) => {
     e.stopPropagation();
@@ -194,11 +199,15 @@ const CustomersList: React.FC = () => {
         className="bg-white rounded-xl shadow-md overflow-hidden"
       >
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy mx-auto"></div>
-          </div>
+          <SkeletonTable rows={6} cols={6} />
         ) : customers.length === 0 ? (
-          <div className="p-8 text-center text-steel">No customers found</div>
+          <EmptyState
+            icon="👥"
+            title="No customers yet"
+            description="Add your first customer or they will appear when you create measurements."
+            actionLabel="New Customer"
+            onAction={() => setShowAddModal(true)}
+          />
         ) : (
           <>
             <div className="overflow-x-auto">

@@ -8,6 +8,7 @@
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { validateMeasurement } = require('../utils/validation');
+const { logAudit } = require('../utils/audit');
 
 // GET /api/measurements/:id
 async function getMeasurement(req, res) {
@@ -110,6 +111,14 @@ async function updateMeasurement(req, res) {
       });
     }
 
+    const fitPref = data.fit_preference !== undefined
+      ? (['slim', 'regular', 'loose', 'custom'].includes(data.fit_preference) ? data.fit_preference : null)
+      : undefined;
+    const profileId = data.profile_id !== undefined ? data.profile_id : undefined;
+    const templateId = data.template_id !== undefined ? data.template_id : undefined;
+
+    const startedAt = existing[0].updated_at || existing[0].created_at;
+
     // Update measurement (triggers history creation)
     await query(
       `UPDATE measurements SET
@@ -128,9 +137,12 @@ async function updateMeasurement(req, res) {
         trouser_bars = COALESCE($13, trouser_bars),
         additional_info = COALESCE($14, additional_info),
         branch = COALESCE($15, branch),
+        fit_preference = COALESCE($16, fit_preference),
+        profile_id = COALESCE($17, profile_id),
+        template_id = COALESCE($18, template_id),
         version = version + 1,
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $16`,
+       WHERE id = $19`,
       [
         data.units,
         data.across_back,
@@ -147,19 +159,24 @@ async function updateMeasurement(req, res) {
         data.trouser_bars,
         data.additional_info,
         data.branch,
+        fitPref,
+        profileId,
+        templateId,
         id,
       ]
     );
 
-    // Log audit
+    await logAudit(req, user.userId, 'update', 'measurement', id, { changes: Object.keys(data) });
+
     try {
+      const durationSeconds = startedAt ? Math.round((Date.now() - new Date(startedAt).getTime()) / 1000) : null;
       await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'update', 'measurement', $2, $3)`,
-        [user.userId, id, JSON.stringify({ changes: Object.keys(data) })]
+        `INSERT INTO sla_logs (measurement_id, action_type, started_at, completed_at, duration_seconds, assignee_id)
+         VALUES ($1, 'update', $2, CURRENT_TIMESTAMP, $3, $4)`,
+        [id, startedAt, durationSeconds, user.userId]
       );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
+    } catch (slaErr) {
+      if (!slaErr.message?.includes('sla_logs')) console.log('SLA log failed:', slaErr.message);
     }
 
     return res.status(200).json({ message: 'Measurement updated successfully' });
@@ -207,24 +224,10 @@ async function deleteMeasurement(req, res) {
     // Delete the measurement
     await query('DELETE FROM measurements WHERE id = $1', [id]);
 
-    // Log audit
-    try {
-      await query(
-        `INSERT INTO activity_logs (user_id, action, resource_type, resource_id, details)
-         VALUES ($1, 'delete', 'measurement', $2, $3)`,
-        [
-          user.userId, 
-          id, 
-          JSON.stringify({ 
-            entry_id: measurement.entry_id,
-            customer_name: measurement.customer_name 
-          })
-        ]
-      );
-    } catch (err) {
-      console.log('Could not log activity:', err.message);
-      // Don't fail the delete if logging fails
-    }
+    await logAudit(req, user.userId, 'delete', 'measurement', id, {
+      entry_id: measurement.entry_id,
+      customer_name: measurement.customer_name,
+    });
 
     return res.status(200).json({ 
       message: 'Measurement deleted successfully',

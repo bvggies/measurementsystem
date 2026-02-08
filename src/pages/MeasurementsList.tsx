@@ -4,6 +4,10 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import { useToast } from '../contexts/ToastContext';
+import { SkeletonTable } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 
 interface Measurement {
   id: string;
@@ -18,7 +22,10 @@ interface Measurement {
 
 const MeasurementsList: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,6 +69,8 @@ const MeasurementsList: React.FC = () => {
     fetchMeasurements();
   };
 
+  const cardBg = isDark ? 'bg-dark-surface border border-dark-border' : 'bg-white shadow-md';
+
   return (
     <div className="space-y-6 pb-32">
       <motion.div
@@ -69,13 +78,21 @@ const MeasurementsList: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <h1 className="text-3xl font-bold text-gray-900">Measurements</h1>
-        <Link
-          to="/measurements/new"
-          className="px-4 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition"
-        >
-          + New Measurement
-        </Link>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Measurements</h1>
+        <div className="flex gap-2">
+          <Link
+            to="/measurements/compare"
+            className="px-4 py-2.5 border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold rounded-xl hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold transition"
+          >
+            Compare
+          </Link>
+          <Link
+            to="/measurements/new"
+            className="px-4 py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-bg transition"
+          >
+            + New Measurement
+          </Link>
+        </div>
       </motion.div>
 
       {/* Search and Filters */}
@@ -83,7 +100,7 @@ const MeasurementsList: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`${cardBg} rounded-xl p-6`}
       >
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="flex gap-4">
@@ -92,11 +109,13 @@ const MeasurementsList: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, phone, or entry ID..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`flex-1 px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold focus:border-transparent focus-visible:outline-none ${
+                isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'
+              }`}
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90"
+              className="px-6 py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 transition"
             >
               Search
             </button>
@@ -106,7 +125,9 @@ const MeasurementsList: React.FC = () => {
             <select
               value={filters.unit}
               onChange={(e) => setFilters({ ...filters, unit: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold ${
+                isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'
+              }`}
             >
               <option value="">All Units</option>
               <option value="cm">Centimeters</option>
@@ -118,15 +139,18 @@ const MeasurementsList: React.FC = () => {
               value={filters.branch}
               onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
               placeholder="Branch"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold ${
+                isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'
+              }`}
             />
-
             <input
               type="text"
               value={filters.tailor}
               onChange={(e) => setFilters({ ...filters, tailor: e.target.value })}
               placeholder="Tailor ID"
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold ${
+                isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'
+              }`}
             />
           </div>
         </form>
@@ -137,30 +161,34 @@ const MeasurementsList: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md overflow-hidden"
+        className={`${cardBg} rounded-xl overflow-hidden`}
       >
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          </div>
+          <SkeletonTable rows={8} cols={7} />
         ) : measurements.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No measurements found</div>
+          <EmptyState
+            icon="📏"
+            title="No measurements yet"
+            description="Create your first measurement or import from CSV/Excel."
+            actionLabel="New Measurement"
+            actionHref="/measurements/new"
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className={isDark ? 'bg-dark-border/50' : 'bg-gray-50'}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created By</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Entry ID</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Customer</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Phone</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Units</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Created By</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className={`divide-y ${isDark ? 'divide-dark-border' : 'divide-gray-200'}`}>
                   {measurements.map((measurement, index) => (
                     <motion.tr
                       key={measurement.id}
@@ -168,7 +196,7 @@ const MeasurementsList: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       data-aos="fade-right"
-                      className="hover:bg-gray-50"
+                      className={isDark ? 'hover:bg-dark-border/30' : 'hover:bg-gray-50'}
                       onClick={(e) => {
                         // Don't navigate if clicking on action buttons
                         if ((e.target as HTMLElement).closest('a, button')) {
@@ -178,22 +206,22 @@ const MeasurementsList: React.FC = () => {
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.entry_id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.customer_name || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.customer_phone || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.units}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.created_by_name || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {format(new Date(measurement.created_at), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -248,8 +276,8 @@ const MeasurementsList: React.FC = () => {
                                   try {
                                     const response = await axios.delete(`/api/measurements/${measurement.id}`);
                                     if (response.data?.message) {
-                                      // Success - refresh the list
                                       await fetchMeasurements();
+                                      toast('Measurement deleted successfully', 'success');
                                     } else {
                                       throw new Error('Unexpected response from server');
                                     }
@@ -257,15 +285,12 @@ const MeasurementsList: React.FC = () => {
                                     let errorMsg = 'Failed to delete measurement';
                                     if (err.response?.data) {
                                       const data = err.response.data;
-                                      if (typeof data.error === 'string') {
-                                        errorMsg = data.error;
-                                      } else if (typeof data.message === 'string') {
-                                        errorMsg = data.message;
-                                      }
+                                      if (typeof data.error === 'string') errorMsg = data.error;
+                                      else if (typeof data.message === 'string') errorMsg = data.message;
                                     } else if (err.message && typeof err.message === 'string') {
                                       errorMsg = err.message;
                                     }
-                                    alert(errorMsg);
+                                    toast(errorMsg, 'error');
                                     console.error('Delete error:', err);
                                   }
                                 }
