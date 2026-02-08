@@ -2,13 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area for notched devices (iOS, Android) */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
 body {
   margin: 0;
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Minimum touch target for primary nav/header on touch devices */
+@media (pointer: coarse) {
+  header button:not(.touch-ignore),
+  header a:not(.touch-ignore),
+  nav[aria-label] a:not(.touch-ignore),
+  nav[aria-label] button:not(.touch-ignore) {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 code {
@@ -55,6 +76,16 @@ code {
 .dark body {
   background-color: #1a1a1a;
   color: #e5e5e5;
+}
+
+/* Main content: extra bottom padding on mobile so bottom nav doesn't cover content */
+.main-content-padding {
+  padding-bottom: max(7rem, calc(7rem + var(--safe-area-inset-bottom)));
+}
+@media (min-width: 1024px) {
+  .main-content-padding {
+    padding-bottom: 3rem;
+  }
 }
 
 /* Hide scrollbar for bottom nav */

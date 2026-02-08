@@ -72,25 +72,25 @@ const MeasurementsList: React.FC = () => {
   const cardBg = isDark ? 'bg-dark-surface border border-dark-border' : 'bg-white shadow-md';
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-4 sm:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
-        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Measurements</h1>
-        <div className="flex gap-2">
+        <h1 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Measurements</h1>
+        <div className="flex flex-wrap gap-2">
           <Link
             to="/measurements/compare"
-            className="px-4 py-2.5 border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold rounded-xl hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold transition"
+            className="flex-1 sm:flex-none min-h-[44px] flex items-center justify-center px-4 py-2.5 border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold rounded-xl hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold transition text-sm font-medium"
           >
             Compare
           </Link>
           <Link
             to="/measurements/new"
-            className="px-4 py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-bg transition"
+            className="flex-1 sm:flex-none min-h-[44px] flex items-center justify-center px-4 py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-bg transition text-sm font-medium"
           >
-            + New Measurement
+            + New
           </Link>
         </div>
       </motion.div>
@@ -99,29 +99,28 @@ const MeasurementsList: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        data-aos="fade-up"
-        className={`${cardBg} rounded-xl p-6`}
+        className={`${cardBg} rounded-xl p-4 sm:p-6`}
       >
         <form onSubmit={handleSearch} className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, phone, or entry ID..."
-              className={`flex-1 px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold focus:border-transparent focus-visible:outline-none ${
+              className={`flex-1 min-w-0 px-4 py-3 sm:py-2.5 border rounded-xl focus:ring-2 focus:ring-primary-gold focus:border-transparent focus-visible:outline-none text-base ${
                 isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'
               }`}
             />
             <button
               type="submit"
-              className="px-6 py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 transition"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-6 py-3 sm:py-2.5 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 transition font-medium"
             >
               Search
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <select
               value={filters.unit}
               onChange={(e) => setFilters({ ...filters, unit: e.target.value })}
@@ -175,17 +174,64 @@ const MeasurementsList: React.FC = () => {
           />
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            {/* Mobile: card list */}
+            <div className="md:hidden space-y-3">
+              {measurements.map((measurement, index) => (
+                <motion.div
+                  key={measurement.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
+                  onClick={() => navigate(`/measurements/view/${measurement.id}`)}
+                  className={`${isDark ? 'bg-dark-bg border-dark-border hover:bg-dark-border/30' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-xl p-4 active:scale-[0.99] transition cursor-pointer`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className={`font-semibold text-sm truncate ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
+                        {measurement.customer_name || measurement.entry_id}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {measurement.entry_id} · {measurement.units}
+                      </p>
+                      <p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {format(new Date(measurement.created_at), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1.5 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/measurements/view/${measurement.id}`); }}
+                        className="touch-ignore px-3 py-1.5 text-xs font-medium bg-primary-navy text-white rounded-lg"
+                      >
+                        View
+                      </button>
+                      {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
+                        <Link
+                          to={`/measurements/edit/${measurement.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="touch-ignore px-3 py-1.5 text-xs font-medium bg-primary-gold text-primary-navy rounded-lg text-center"
+                        >
+                          Edit
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full min-w-[640px]">
                 <thead className={isDark ? 'bg-dark-border/50' : 'bg-gray-50'}>
                   <tr>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Entry ID</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Customer</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Phone</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Units</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Created By</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Actions</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Entry ID</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Customer</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Phone</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Units</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Created By</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
+                    <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${isDark ? 'divide-dark-border' : 'divide-gray-200'}`}>
@@ -195,45 +241,37 @@ const MeasurementsList: React.FC = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      data-aos="fade-right"
                       className={isDark ? 'hover:bg-dark-border/30' : 'hover:bg-gray-50'}
                       onClick={(e) => {
-                        // Don't navigate if clicking on action buttons
-                        if ((e.target as HTMLElement).closest('a, button')) {
-                          return;
-                        }
+                        if ((e.target as HTMLElement).closest('a, button')) return;
                         navigate(`/measurements/view/${measurement.id}`);
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.entry_id}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.customer_name || 'N/A'}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.customer_phone || 'N/A'}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.units}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {measurement.created_by_name || 'N/A'}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                         {format(new Date(measurement.created_at), 'MMM dd, yyyy')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-4 lg:px-6 py-3 whitespace-nowrap text-sm">
                         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              navigate(`/measurements/view/${measurement.id}`);
-                            }}
-                            className="px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/measurements/view/${measurement.id}`); }}
+                            className="touch-ignore px-2 py-1 text-xs bg-primary-navy text-white rounded hover:bg-opacity-90 transition z-10 relative"
                             title="View"
                           >
                             👁️ View
@@ -241,10 +279,8 @@ const MeasurementsList: React.FC = () => {
                           {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
                             <Link
                               to={`/measurements/edit/${measurement.id}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
+                              onClick={(e) => e.stopPropagation()}
+                              className="touch-ignore px-2 py-1 text-xs bg-primary-gold text-white rounded hover:bg-opacity-90 transition z-10 relative"
                               title="Edit"
                             >
                               ✏️ Edit
@@ -254,14 +290,10 @@ const MeasurementsList: React.FC = () => {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              e.preventDefault();
                               navigate(`/measurements/view/${measurement.id}`);
-                              // Wait for page to load before printing
-                              setTimeout(() => {
-                                window.print();
-                              }, 1500);
+                              setTimeout(() => window.print(), 1500);
                             }}
-                            className="px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
+                            className="touch-ignore px-2 py-1 text-xs bg-steel text-white rounded hover:bg-opacity-90 transition z-10 relative"
                             title="Print"
                           >
                             🖨️ Print
@@ -295,7 +327,7 @@ const MeasurementsList: React.FC = () => {
                                   }
                                 }
                               }}
-                              className="px-2 py-1 text-xs bg-crimson text-white rounded hover:bg-opacity-90 transition cursor-pointer z-10 relative"
+                              className="touch-ignore px-2 py-1 text-xs bg-crimson text-white rounded hover:bg-opacity-90 transition z-10 relative"
                               title="Delete"
                             >
                               🗑️ Delete
@@ -311,23 +343,20 @@ const MeasurementsList: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-steel-light dark:border-dark-border flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 border-t border-steel-light dark:border-dark-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const newPage = Math.max(1, page - 1);
-                    if (newPage !== page) {
-                      setPage(newPage);
-                    }
+                    if (page > 1) setPage(page - 1);
                   }}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors"
+                  className="min-h-[44px] sm:min-h-0 order-2 sm:order-1 px-4 py-3 sm:py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors font-medium"
                 >
                   ← Previous
                 </button>
-                <span className="text-sm text-steel dark:text-gray-300">
+                <span className="text-sm text-steel dark:text-gray-300 order-1 sm:order-2 text-center">
                   Page {page} of {totalPages}
                 </span>
                 <button
@@ -335,13 +364,10 @@ const MeasurementsList: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const newPage = Math.min(totalPages, page + 1);
-                    if (newPage !== page) {
-                      setPage(newPage);
-                    }
+                    if (page < totalPages) setPage(page + 1);
                   }}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors"
+                  className="min-h-[44px] sm:min-h-0 order-3 px-4 py-3 sm:py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors font-medium"
                 >
                   Next →
                 </button>

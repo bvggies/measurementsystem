@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { useTheme } from '../contexts/ThemeContext';
@@ -79,23 +80,61 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-6 pb-24 lg:pb-12">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-wrap items-center justify-between gap-4"
       >
-        <h1 className={`text-3xl font-bold transition-colors duration-200 ${
+        <h1 className={`text-2xl sm:text-3xl font-bold transition-colors duration-200 ${
           theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
         }`}>Admin Panel</h1>
-        <button
-          type="button"
-          onClick={handleBackupExport}
-          disabled={exporting}
-          className="px-4 py-2 rounded-xl bg-primary-gold text-primary-navy hover:bg-primary-gold/90 disabled:opacity-50 transition-colors"
-        >
-          {exporting ? 'Exporting…' : 'Export backup (JSON)'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/activity-logs"
+            className="px-4 py-2 rounded-xl border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 transition"
+          >
+            Activity Logs
+          </Link>
+          <Link
+            to="/expiry-rules"
+            className="px-4 py-2 rounded-xl border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 transition"
+          >
+            Expiry Rules
+          </Link>
+          <Link
+            to="/settings"
+            className="px-4 py-2 rounded-xl border border-primary-navy dark:border-primary-gold text-primary-navy dark:text-primary-gold hover:bg-primary-navy/10 dark:hover:bg-primary-gold/10 transition"
+          >
+            Settings
+          </Link>
+          <button
+            type="button"
+            onClick={handleBackupExport}
+            disabled={exporting}
+            className="px-4 py-2 rounded-xl bg-primary-gold text-primary-navy hover:bg-primary-gold/90 disabled:opacity-50 transition-colors"
+          >
+            {exporting ? 'Exporting…' : 'Export backup'}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Quick links */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          theme === 'dark' ? 'bg-dark-surface border border-dark-border' : 'bg-white border border-gray-200'
+        }`}
+      >
+        <h2 className={`text-lg font-bold mb-3 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
+        }`}>Admin shortcuts</h2>
+        <p className={`text-sm mb-4 transition-colors duration-200 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-steel'
+        }`}>
+          If settings fail to save with &quot;Settings table not found&quot;, run the database migration to create the <code className="text-xs bg-gray-100 dark:bg-dark-bg px-1 rounded">system_settings</code> table (see <code className="text-xs bg-gray-100 dark:bg-dark-bg px-1 rounded">database/schema_updates.sql</code>).
+        </p>
       </motion.div>
 
       {/* Create Shareable Form Link */}

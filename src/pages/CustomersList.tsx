@@ -118,9 +118,14 @@ const CustomersList: React.FC = () => {
       setEditingCustomer(null);
       setFormData({ name: '', phone: '', email: '', address: '' });
       await fetchCustomers();
+      toast(editingCustomer ? 'Customer updated' : 'Customer added', 'success');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save customer');
-      console.error('Save error:', err);
+      const msg =
+        (err.response?.data && (typeof err.response.data.error === 'string' ? err.response.data.error : err.response.data.message)) ||
+        (typeof err.message === 'string' ? err.message : 'Failed to save customer');
+      setError(msg || 'Failed to save customer');
+      toast(msg || 'Failed to save customer', 'error');
+      console.error('Save error:', err?.response?.data || err);
     } finally {
       setSaving(false);
     }
@@ -144,21 +149,22 @@ const CustomersList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-4 sm:space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
-        <h1 className="text-3xl font-bold text-primary-navy">Customers</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary-navy dark:text-dark-text">Customers</h1>
         {(user?.role === 'admin' || user?.role === 'manager') && (
           <button
+            type="button"
             onClick={() => {
               setEditingCustomer(null);
               setFormData({ name: '', phone: '', email: '', address: '' });
               setShowAddModal(true);
             }}
-            className="px-4 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition"
+            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-4 py-3 sm:py-2 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 transition font-medium"
           >
             + New Customer
           </button>
@@ -169,21 +175,20 @@ const CustomersList: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className="bg-white dark:bg-dark-surface rounded-xl shadow-md dark:border dark:border-dark-border p-4 sm:p-6"
       >
         <form onSubmit={handleSearch} className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, phone, or email..."
-              className="flex-1 px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+              className="flex-1 min-w-0 px-4 py-3 sm:py-2 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-xl focus:ring-2 focus:ring-primary-gold text-base"
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition-colors"
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-0 px-6 py-3 sm:py-2 bg-primary-navy text-white rounded-xl hover:bg-primary-navy/90 transition-colors font-medium"
             >
               Search
             </button>
@@ -195,8 +200,7 @@ const CustomersList: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md overflow-hidden"
+        className="bg-white dark:bg-dark-surface rounded-xl shadow-md dark:border dark:border-dark-border overflow-hidden"
       >
         {loading ? (
           <SkeletonTable rows={6} cols={6} />
@@ -211,7 +215,7 @@ const CustomersList: React.FC = () => {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-soft-white">
                   <tr>
                     <th
@@ -290,37 +294,21 @@ const CustomersList: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-steel-light dark:border-dark-border flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 border-t border-steel-light dark:border-dark-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const newPage = Math.max(1, page - 1);
-                    if (newPage !== page) {
-                      setPage(newPage);
-                    }
-                  }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (page > 1) setPage(page - 1); }}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors"
+                  className="min-h-[44px] sm:min-h-0 px-4 py-3 sm:py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors font-medium"
                 >
                   ← Previous
                 </button>
-                <span className="text-sm text-steel dark:text-gray-300">
-                  Page {page} of {totalPages}
-                </span>
+                <span className="text-sm text-steel dark:text-gray-300 text-center">Page {page} of {totalPages}</span>
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const newPage = Math.min(totalPages, page + 1);
-                    if (newPage !== page) {
-                      setPage(newPage);
-                    }
-                  }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (page < totalPages) setPage(page + 1); }}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors"
+                  className="min-h-[44px] sm:min-h-0 px-4 py-3 sm:py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-soft-white dark:hover:bg-dark-surface transition-colors font-medium"
                 >
                   Next →
                 </button>

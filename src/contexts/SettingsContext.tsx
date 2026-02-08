@@ -99,7 +99,12 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
     } catch (error: any) {
       console.error('Failed to update settings:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to update settings';
+      const data = error.response?.data;
+      const errorMessage =
+        (typeof data?.message === 'string' ? data.message : null) ||
+        (typeof data?.error === 'string' ? data.error : null) ||
+        (typeof error.message === 'string' ? error.message : null) ||
+        'Failed to update settings';
       throw new Error(errorMessage);
     }
   };

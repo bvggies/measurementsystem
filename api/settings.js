@@ -19,8 +19,10 @@ async function getSettings(req, res) {
         `SELECT * FROM system_settings ORDER BY id DESC LIMIT 1`
       );
     } catch (dbError) {
-      console.error('Database error in getSettings:', dbError);
-      // If table doesn't exist or other DB error, return defaults
+      // Table missing (42P01) or other DB error: return defaults without failing
+      if (dbError.code !== '42P01') {
+        console.error('Database error in getSettings:', dbError);
+      }
       settings = [];
     }
 
@@ -100,16 +102,21 @@ async function updateSettings(req, res) {
       return res.status(400).json({ error: 'Invalid settings data' });
     }
 
-    // Check if settings exist
+    // Check if settings exist (table may be missing if migration not run)
     let existing = [];
     try {
       existing = await query('SELECT id FROM system_settings ORDER BY id DESC LIMIT 1');
     } catch (dbError) {
+      if (dbError.code === '42P01') {
+        return res.status(503).json({
+          error: 'Settings table not found',
+          message: 'Please run database migration: add system_settings table (see database/schema.sql or schema_updates.sql).',
+        });
+      }
       console.error('Database error checking existing settings:', dbError);
       return res.status(500).json({
         error: 'Database error',
         message: dbError.message || 'Failed to check existing settings',
-        details: process.env.NODE_ENV === 'development' ? dbError.stack : undefined
       });
     }
 

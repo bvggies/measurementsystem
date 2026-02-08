@@ -43,6 +43,7 @@ const Calendar: React.FC = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [measurements, setMeasurements] = useState<any[]>([]);
   const [tailors, setTailors] = useState<any[]>([]);
+  const [dropdownLoading, setDropdownLoading] = useState(false);
 
   const fetchFittings = useCallback(async () => {
     try {
@@ -69,19 +70,24 @@ const Calendar: React.FC = () => {
   }, [fetchFittings]);
 
   useEffect(() => {
-    // Fetch customers and tailors for dropdowns
     const fetchDropdownData = async () => {
+      setDropdownLoading(true);
       try {
         const [customersRes, measurementsRes, tailorsRes] = await Promise.all([
-          axios.get('/api/customers?limit=1000'),
-          axios.get('/api/measurements?limit=1000'),
-          user?.role === 'admin' || user?.role === 'manager' ? axios.get('/api/users?role=tailor').catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
+          axios.get('/api/customers?limit=1000').catch(() => ({ data: {} })),
+          axios.get('/api/measurements?limit=1000').catch(() => ({ data: {} })),
+          (user?.role === 'admin' || user?.role === 'manager')
+            ? axios.get('/api/users?role=tailor').catch(() => ({ data: [] }))
+            : Promise.resolve({ data: [] }),
         ]);
-        setCustomers(customersRes.data.data || []);
-        setMeasurements(measurementsRes.data.data || []);
-        setTailors(tailorsRes.data || []);
+        setCustomers(Array.isArray(customersRes.data?.data) ? customersRes.data.data : []);
+        setMeasurements(Array.isArray(measurementsRes.data?.data) ? measurementsRes.data.data : []);
+        const t = tailorsRes.data;
+        setTailors(Array.isArray(t) ? t : Array.isArray(t?.users) ? t.users : []);
       } catch (error) {
         console.error('Failed to fetch dropdown data:', error);
+      } finally {
+        setDropdownLoading(false);
       }
     };
     fetchDropdownData();
@@ -479,53 +485,57 @@ const Calendar: React.FC = () => {
 
       {/* Add/Edit Fitting Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-dark-surface rounded-xl shadow-xl p-6 max-w-md w-full my-8 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-dark-border"
           >
-            <h2 className="text-2xl font-bold text-primary-navy mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-primary-navy dark:text-dark-text mb-4">
               {selectedFitting ? 'Edit Fitting' : 'New Fitting'}
             </h2>
 
             {error && (
-              <div className="mb-4 p-4 bg-crimson bg-opacity-10 border border-crimson rounded-lg text-crimson">
+              <div className="mb-4 p-4 bg-crimson/10 border border-crimson rounded-lg text-crimson text-sm">
                 {error}
               </div>
             )}
 
+            {dropdownLoading && (
+              <p className="text-sm text-steel dark:text-gray-400 mb-4">Loading options…</p>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Customer *</label>
+                <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Customer *</label>
                 <select
                   value={formData.customer_id}
                   onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className="w-full px-4 py-2.5 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
                   required
                 >
                   <option value="">Select customer</option>
-                  {customers.map((customer) => (
+                  {(Array.isArray(customers) ? customers : []).map((customer) => (
                     <option key={customer.id} value={customer.id}>
-                      {customer.name} {customer.phone && `(${customer.phone})`}
+                      {customer.name || 'Unnamed'} {customer.phone ? `(${customer.phone})` : ''}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Measurement (Optional)</label>
+                <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Measurement (Optional)</label>
                 <select
                   value={formData.measurement_id}
                   onChange={(e) => setFormData({ ...formData, measurement_id: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className="w-full px-4 py-2.5 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
                 >
                   <option value="">Select measurement</option>
-                  {measurements
+                  {(Array.isArray(measurements) ? measurements : [])
                     .filter((m) => !formData.customer_id || m.customer_id === formData.customer_id)
-                    .map((measurement) => (
-                      <option key={measurement.id} value={measurement.id}>
-                        {measurement.entry_id} - {measurement.customer_name}
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.entry_id || m.id} {m.customer_name ? `- ${m.customer_name}` : ''}
                       </option>
                     ))}
                 </select>
@@ -533,17 +543,17 @@ const Calendar: React.FC = () => {
 
               {(user?.role === 'admin' || user?.role === 'manager') && (
                 <div>
-                  <label className="block text-sm font-medium text-steel mb-2">Tailor *</label>
+                  <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Tailor *</label>
                   <select
                     value={formData.tailor_id}
                     onChange={(e) => setFormData({ ...formData, tailor_id: e.target.value })}
-                    className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
-                    required
+                    className="w-full px-4 py-2.5 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
+                    required={user?.role === 'admin' || user?.role === 'manager'}
                   >
                     <option value="">Select tailor</option>
-                    {tailors.map((tailor) => (
+                    {(Array.isArray(tailors) ? tailors : []).map((tailor) => (
                       <option key={tailor.id} value={tailor.id}>
-                        {tailor.name}
+                        {tailor.name || tailor.email || tailor.id}
                       </option>
                     ))}
                   </select>

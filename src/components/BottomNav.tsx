@@ -33,17 +33,18 @@ const BottomNav: React.FC = () => {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-4 left-0 right-0 z-50 flex justify-center px-4"
+      className="fixed left-0 right-0 z-50 flex justify-center px-3 sm:px-4 pb-4 lg:hidden"
+      style={{
+        bottom: 'max(1rem, var(--safe-area-inset-bottom))',
+      }}
+      aria-label="Bottom navigation"
     >
       <div
         className={`${
-          theme === 'dark' 
-            ? 'bg-dark-surface/90 border-dark-border' 
-            : 'bg-white/90 border-white/20'
-        } backdrop-blur-lg rounded-2xl shadow-2xl border w-full max-w-2xl`}
-        style={{
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        }}
+          theme === 'dark'
+            ? 'bg-dark-surface/95 border-dark-border'
+            : 'bg-white/95 border-gray-200'
+        } backdrop-blur-lg rounded-2xl shadow-lg border w-full max-w-2xl`}
       >
         <div className="flex items-center justify-center gap-0.5 sm:gap-1 px-1 sm:px-2 py-2 sm:py-3 overflow-x-auto scrollbar-hide">
           {navItems.map((item) => {
