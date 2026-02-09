@@ -72,7 +72,7 @@ const CustomersList: React.FC = () => {
     let failed = 0;
     for (const id of Array.from(selectedIds)) {
       try {
-        await axios.delete(`/api/customers/${id}`);
+        await axios.delete(`/api/delete-customer?id=${encodeURIComponent(id)}`);
         done++;
       } catch {
         failed++;
@@ -125,7 +125,7 @@ const CustomersList: React.FC = () => {
 
     if (window.confirm(`Are you sure you want to delete customer "${customerName}"? This action cannot be undone.`)) {
       try {
-        await axios.delete(`/api/customers/${customerId}`);
+        await axios.delete(`/api/delete-customer?id=${encodeURIComponent(customerId)}`);
         await fetchCustomers();
         toast('Customer deleted successfully', 'success');
       } catch (err: any) {

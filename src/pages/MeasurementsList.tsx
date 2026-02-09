@@ -64,7 +64,7 @@ const MeasurementsList: React.FC = () => {
     let failed = 0;
     for (const id of Array.from(selectedIds)) {
       try {
-        await axios.delete(`/api/measurements/${id}`);
+        await axios.delete(`/api/delete-measurement?id=${encodeURIComponent(id)}`);
         done++;
       } catch {
         failed++;

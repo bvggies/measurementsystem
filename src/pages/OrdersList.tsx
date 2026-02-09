@@ -119,7 +119,7 @@ const OrdersList: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
 
     try {
-      await axios.delete(`/api/orders/${orderId}`);
+      await axios.delete(`/api/delete-order?id=${encodeURIComponent(orderId)}`);
       await fetchOrders();
     } catch (err: any) {
       let errorMsg = 'Failed to delete order';

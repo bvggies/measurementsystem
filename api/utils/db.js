@@ -8,8 +8,10 @@ const { Pool } = require('pg');
 let pool = null;
 
 function getPoolConfig(connectionString) {
+  const str = String(connectionString || '').trim();
+  const withProtocol = str.match(/^[a-z][a-z0-9+.-]*:\/\//i) ? str : `postgresql://${str}`;
   try {
-    const u = new URL(connectionString);
+    const u = new URL(withProtocol);
     const database = u.pathname ? u.pathname.replace(/^\//, '').replace(/%2f/gi, '/') : undefined;
     const isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
     return {
@@ -25,15 +27,41 @@ function getPoolConfig(connectionString) {
       statement_timeout: 30000,
     };
   } catch (_) {
+    const parsed = parseConnectionStringFallback(str);
     return {
-      connectionString,
-      ssl: connectionString?.includes('localhost') ? false : { rejectUnauthorized: false },
+      ...parsed,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
       statement_timeout: 30000,
     };
   }
+}
+
+function parseConnectionStringFallback(str) {
+  const isLocal = str.includes('localhost') || str.includes('127.0.0.1');
+  const ssl = isLocal ? false : { rejectUnauthorized: false };
+  const m = str.match(/^(?:postgres(?:ql)?:)?\/\/(?:([^:@]+):([^@]*)@)?([^:/]+)(?::(\d+))?\/?([^?]*)/);
+  if (m) {
+    const [, user, password, host, port, path] = m;
+    let database = path ? path.replace(/^\//, '').trim() : undefined;
+    if (database) {
+      try {
+        database = decodeURIComponent(database);
+      } catch (_) {
+        /* use as-is */
+      }
+    }
+    return {
+      host: host || 'localhost',
+      port: port ? parseInt(port, 10) : 5432,
+      database: database || undefined,
+      user: user || undefined,
+      password: password !== undefined && password !== '' ? password : undefined,
+      ssl,
+    };
+  }
+  return { host: 'localhost', port: 5432, database: undefined, user: undefined, password: undefined, ssl };
 }
 
 const initDb = () => {

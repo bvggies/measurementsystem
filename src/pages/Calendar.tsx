@@ -166,7 +166,7 @@ const Calendar: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this fitting?')) return;
 
     try {
-      await axios.delete(`/api/fittings/${selectedFitting.id}`);
+      await axios.delete(`/api/delete-fitting?id=${encodeURIComponent(selectedFitting.id)}`);
       setShowFittingModal(false);
       setSelectedFitting(null);
       await fetchFittings();
