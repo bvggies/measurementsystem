@@ -31,7 +31,7 @@ const MeasurementView: React.FC = () => {
     setError('');
     setMeasurement(null);
     try {
-      const response = await axios.get(`/api/measurements/${id}`);
+      const response = await axios.get(`/api/get-measurement?id=${encodeURIComponent(id)}`);
       let body = response?.data;
 
       if (body != null && typeof body === 'string') {
