@@ -7,145 +7,132 @@ interface PrintMeasurementProps {
 
 const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
   const { settings } = useSettings();
-  
+
   if (!measurement) {
     return null;
   }
-  
+
   const systemName = settings.name || 'FitTrack';
-  const customerName = measurement?.customer_name || 'Customer';
+  const units = measurement.units || 'cm';
+
+  const topRows = [
+    { label: 'Across Back', value: measurement.across_back },
+    { label: 'Chest', value: measurement.chest },
+    { label: 'Sleeve', value: measurement.sleeve_length },
+    { label: 'Around Arm', value: measurement.around_arm },
+    { label: 'Neck', value: measurement.neck },
+    { label: 'Top Length', value: measurement.top_length },
+    { label: 'Wrist', value: measurement.wrist },
+  ];
+  const trouserRows = [
+    { label: 'Waist', value: measurement.trouser_waist },
+    { label: 'Thigh', value: measurement.trouser_thigh },
+    { label: 'Knee', value: measurement.trouser_knee },
+    { label: 'Length', value: measurement.trouser_length },
+    { label: 'Bars', value: measurement.trouser_bars },
+  ];
 
   return (
     <>
-      <div className="hidden print:block">
-        <div className="p-8">
-          <div className="mb-8 text-center border-b pb-4">
-            <img src={settings.logo || "/applogo.png"} alt={systemName} className="h-20 w-20 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-primary-navy">{systemName}</h1>
-            <p className="text-steel font-medium">{settings.tagline || 'Measurement Record'}</p>
-            {(settings.address || settings.phone || settings.email) && (
-              <div className="mt-3 text-sm text-steel space-y-1">
-                {settings.address && <p>{settings.address}</p>}
-                {settings.phone && <p>Phone: {settings.phone}</p>}
-                {settings.email && <p>Email: {settings.email}</p>}
-              </div>
-            )}
-            <p className="text-sm text-primary-navy font-medium mt-3">Customer: {customerName}</p>
+      <div className="print-measurement-card">
+        <div className="print-card-header">
+          <img src={settings.logo || '/applogo.png'} alt="" className="print-card-logo" />
+          <div>
+            <h1 className="print-card-title">{systemName}</h1>
+            <p className="print-card-entry">#{measurement.entry_id || '—'}</p>
           </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Customer Information</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-steel">Name:</p>
-                <p className="font-medium">{measurement.customer_name || 'N/A'}</p>
+        </div>
+        <div className="print-card-customer">
+          <strong>{measurement.customer_name || 'Customer'}</strong>
+          {measurement.customer_phone && <span> · {measurement.customer_phone}</span>}
+        </div>
+        <div className="print-card-grid">
+          <div className="print-card-section">
+            <div className="print-card-section-title">Top ({units})</div>
+            {topRows.map(({ label, value }) => (
+              <div key={label} className="print-card-row">
+                <span className="print-card-label">{label}</span>
+                <span className="print-card-value">{value ?? '—'}</span>
               </div>
-              <div>
-                <p className="text-sm text-steel">Phone:</p>
-                <p className="font-medium">{measurement.customer_phone || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Email:</p>
-                <p className="font-medium">{measurement.customer_email || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Entry ID:</p>
-                <p className="font-medium">{measurement.entry_id || 'N/A'}</p>
-              </div>
-            </div>
+            ))}
           </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Top Measurements ({measurement.units})</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-steel">Across Back:</p>
-                <p className="font-medium">{measurement.across_back || 'N/A'}</p>
+          <div className="print-card-section">
+            <div className="print-card-section-title">Trouser ({units})</div>
+            {trouserRows.map(({ label, value }) => (
+              <div key={label} className="print-card-row">
+                <span className="print-card-label">{label}</span>
+                <span className="print-card-value">{value ?? '—'}</span>
               </div>
-              <div>
-                <p className="text-sm text-steel">Chest:</p>
-                <p className="font-medium">{measurement.chest || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Sleeve Length:</p>
-                <p className="font-medium">{measurement.sleeve_length || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Around Arm:</p>
-                <p className="font-medium">{measurement.around_arm || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Neck:</p>
-                <p className="font-medium">{measurement.neck || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Top Length:</p>
-                <p className="font-medium">{measurement.top_length || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Wrist:</p>
-                <p className="font-medium">{measurement.wrist || 'N/A'}</p>
-              </div>
-            </div>
+            ))}
           </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Trouser Measurements ({measurement.units})</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-steel">Waist:</p>
-                <p className="font-medium">{measurement.trouser_waist || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Thigh:</p>
-                <p className="font-medium">{measurement.trouser_thigh || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Knee:</p>
-                <p className="font-medium">{measurement.trouser_knee || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Trouser Length:</p>
-                <p className="font-medium">{measurement.trouser_length || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-steel">Bars:</p>
-                <p className="font-medium">{measurement.trouser_bars || 'N/A'}</p>
-              </div>
-            </div>
+        </div>
+        {measurement.additional_info && (
+          <div className="print-card-notes">
+            <span className="print-card-label">Notes: </span>
+            <span>{measurement.additional_info}</span>
           </div>
-
-          {measurement.additional_info && (
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Additional Information</h2>
-              <p className="text-steel">{measurement.additional_info}</p>
-            </div>
-          )}
-
-          <div className="mt-8 text-sm text-steel text-center border-t pt-4">
-            <p className="font-semibold text-primary-navy mb-2">{systemName} - Measurement Record</p>
-            <p>Created: {new Date(measurement.created_at).toLocaleDateString()}</p>
-            {measurement.created_by_name && <p>Created by: {measurement.created_by_name}</p>}
-            {measurement.entry_id && <p>Entry ID: {measurement.entry_id}</p>}
-          </div>
+        )}
+        <div className="print-card-footer">
+          {new Date(measurement.created_at).toLocaleDateString()}
+          {measurement.created_by_name && ` · ${measurement.created_by_name}`}
         </div>
       </div>
 
       <style>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print\\:block,
-          .print\\:block * {
-            visibility: visible;
-          }
-          .print\\:block {
-            position: absolute;
+          @page { size: auto; margin: 12mm; }
+          body * { visibility: hidden; }
+          [data-print-root], [data-print-root] * { visibility: visible; }
+          [data-print-root] {
+            position: fixed;
             left: 0;
             top: 0;
             width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
           }
+          .print-measurement-card {
+            width: 85mm;
+            max-width: 85mm;
+            min-height: 54mm;
+            padding: 4mm;
+            border: 1px solid #333;
+            border-radius: 2mm;
+            background: #fff;
+            box-shadow: none;
+            font-size: 7px;
+            line-height: 1.25;
+            color: #111;
+          }
+          .print-card-header {
+            display: flex;
+            align-items: center;
+            gap: 3mm;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2mm;
+            margin-bottom: 2mm;
+          }
+          .print-card-logo {
+            width: 12mm;
+            height: 12mm;
+            object-fit: contain;
+          }
+          .print-card-title { font-size: 10px; font-weight: 700; margin: 0; color: #0D2136; }
+          .print-card-entry { font-size: 7px; margin: 0; color: #586577; }
+          .print-card-customer { font-size: 9px; margin-bottom: 2mm; }
+          .print-card-grid { display: flex; gap: 4mm; }
+          .print-card-section { flex: 1; }
+          .print-card-section-title { font-size: 7px; font-weight: 700; text-transform: uppercase; margin-bottom: 1mm; color: #586577; }
+          .print-card-row { display: flex; justify-content: space-between; gap: 2mm; }
+          .print-card-label { color: #586577; }
+          .print-card-value { font-weight: 600; }
+          .print-card-notes { font-size: 7px; margin-top: 2mm; padding-top: 2mm; border-top: 1px solid #ddd; }
+          .print-card-footer { font-size: 6px; color: #586577; margin-top: 2mm; }
         }
       `}</style>
     </>
@@ -153,4 +140,3 @@ const PrintMeasurement: React.FC<PrintMeasurementProps> = ({ measurement }) => {
 };
 
 export default PrintMeasurement;
-

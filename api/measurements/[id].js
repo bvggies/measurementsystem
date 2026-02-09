@@ -11,13 +11,53 @@ const { validateMeasurement } = require('../utils/validation');
 const { logAudit } = require('../utils/audit');
 const { handleCors } = require('../utils/cors');
 
+/**
+ * Extract measurement id from request (query, path, or URL).
+ * Works with Vercel and other serverless environments.
+ */
 function getIdFromRequest(req) {
-  let id = req.query && req.query.id;
-  if (!id && req.url) {
-    const pathMatch = req.url.split('?')[0].match(/\/api\/measurements\/([^/]+)/);
-    if (pathMatch) id = pathMatch[1];
+  let id = (req.query && (req.query.id || req.query.measurementId)) || null;
+  if (id) return String(id).trim() || null;
+
+  const pathSegment = getPathSegment(req);
+  if (pathSegment) return pathSegment;
+
+  if (req.url) {
+    const pathOnly = String(req.url).split('?')[0];
+    const m = pathOnly.match(/\/api\/measurements\/([^/]+)/);
+    if (m && m[1]) return decodeURIComponent(m[1]);
   }
-  return id || null;
+  return null;
+}
+
+function getPathSegment(req) {
+  try {
+    const urlOrPath = req.url || req.path || '';
+    const pathname = urlOrPath.startsWith('http')
+      ? new URL(urlOrPath).pathname
+      : new URL(urlOrPath, 'https://x').pathname;
+    const m = pathname.match(/\/api\/measurements\/([^/]+)/);
+    return m && m[1] ? decodeURIComponent(m[1]) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function isUuid(str) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(str));
+}
+
+/** Ensure we return a plain JSON-serializable object (no Date/BigInt issues). */
+function toPlainMeasurement(row) {
+  if (!row || typeof row !== 'object') return null;
+  const out = {};
+  for (const key of Object.keys(row)) {
+    const v = row[key];
+    if (v instanceof Date) out[key] = v.toISOString();
+    else if (typeof v === 'bigint') out[key] = String(v);
+    else out[key] = v;
+  }
+  return out;
 }
 
 // GET /api/measurements/:id
@@ -26,11 +66,11 @@ async function getMeasurement(req, res) {
     const user = requireAuth(req);
     const id = getIdFromRequest(req);
     if (!id) {
-      return res.status(400).json({ error: 'Measurement ID is required' });
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(400).json({ success: false, error: 'Measurement ID is required' });
     }
 
-    const measurements = await query(
-      `SELECT 
+    const baseSql = `SELECT 
         m.*,
         c.name as customer_name,
         c.phone as customer_phone,
@@ -39,40 +79,46 @@ async function getMeasurement(req, res) {
         u.name as created_by_name
        FROM measurements m
        LEFT JOIN customers c ON m.customer_id = c.id
-       LEFT JOIN users u ON m.created_by = u.id
-       WHERE m.id = $1`,
-      [id]
-    );
+       LEFT JOIN users u ON m.created_by = u.id`;
 
-    if (measurements.length === 0) {
-      return res.status(404).json({ error: 'Measurement not found' });
+    let rows = await query(`${baseSql} WHERE m.id = $1`, [id]);
+    if (rows.length === 0 && !isUuid(id)) {
+      rows = await query(`${baseSql} WHERE m.entry_id = $1`, [id]);
     }
 
-    const measurement = measurements[0];
+    if (rows.length === 0) {
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(404).json({ success: false, error: 'Measurement not found' });
+    }
 
-    // Role-based access control
+    const row = rows[0];
+
     if (user.role === 'customer') {
-      // Customers can only view their own measurements
       const customer = await query('SELECT id FROM customers WHERE email = $1', [user.email]);
-      if (customer.length === 0 || measurement.customer_id !== customer[0].id) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (customer.length === 0 || row.customer_id !== customer[0].id) {
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(403).json({ success: false, error: 'Access denied' });
       }
     } else if (user.role === 'tailor') {
-      // Tailors can only view their own measurements
-      if (measurement.created_by !== user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (row.created_by !== user.userId) {
+        res.setHeader('Content-Type', 'application/json');
+        return res.status(403).json({ success: false, error: 'Access denied' });
       }
     }
 
-    return res.status(200).json({ data: measurement });
+    const data = toPlainMeasurement(row);
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error('Get measurement error:', error);
+    res.setHeader('Content-Type', 'application/json');
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
-      return res.status(401).json({ error: error.message });
+      return res.status(401).json({ success: false, error: error.message });
     }
-    return res.status(500).json({ 
+    return res.status(500).json({
+      success: false,
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
     });
   }
 }

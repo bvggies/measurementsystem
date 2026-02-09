@@ -11,7 +11,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 const MeasurementView: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: idFromUrl } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { settings } = useSettings();
@@ -21,46 +21,52 @@ const MeasurementView: React.FC = () => {
   const [error, setError] = useState('');
 
   const fetchMeasurement = useCallback(async () => {
+    const id = (idFromUrl || '').trim();
     if (!id) {
       setError('Invalid measurement ID');
       setLoading(false);
       return;
     }
+    setLoading(true);
+    setError('');
+    setMeasurement(null);
     try {
-      setLoading(true);
-      setError('');
       const response = await axios.get(`/api/measurements/${id}`);
-      const data = response?.data;
-      // API may return { data: measurement } or measurement directly
-      const raw = (data && typeof data === 'object' && (data.data ?? data.measurement)) ?? (data && typeof data === 'object' && !Array.isArray(data) ? data : null);
-      const measurementData = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? raw : null;
-      if (measurementData && (measurementData.id || measurementData.entry_id)) {
-        setMeasurement(measurementData);
-      } else {
-        setError(data?.error || 'Measurement data is empty or invalid');
+      const body = response?.data;
+
+      if (!body || typeof body !== 'object') {
+        setError('Invalid response from server');
+        return;
       }
+
+      if (body.error && body.success === false) {
+        setError(typeof body.error === 'string' ? body.error : 'Measurement not found');
+        return;
+      }
+
+      const data = body.data ?? body.measurement;
+      const record = data && typeof data === 'object' && !Array.isArray(data) ? data : null;
+
+      if (record && (record.id != null || record.entry_id != null)) {
+        setMeasurement(record);
+        return;
+      }
+
+      setError(typeof body.error === 'string' ? body.error : 'Measurement data is empty or invalid');
     } catch (err: any) {
+      const res = err.response;
       let errorMsg = 'Failed to load measurement';
-      if (err.response?.data) {
-        const data = err.response.data;
-        if (typeof data.error === 'string') {
-          errorMsg = data.error;
-        } else if (typeof data.message === 'string') {
-          errorMsg = data.message;
-        }
+      if (res && res.data && typeof res.data === 'object') {
+        if (typeof res.data.error === 'string') errorMsg = res.data.error;
+        else if (typeof res.data.message === 'string') errorMsg = res.data.message;
       } else if (err.message && typeof err.message === 'string') {
         errorMsg = err.message;
       }
       setError(errorMsg);
-      console.error('Failed to fetch measurement:', {
-        error: err,
-        response: err.response,
-        id,
-      });
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [idFromUrl]);
 
   useEffect(() => {
     fetchMeasurement();
@@ -127,10 +133,12 @@ const MeasurementView: React.FC = () => {
     );
   }
 
+  const measurementId = measurement.id ?? idFromUrl;
+
   return (
     <div className="space-y-6 pb-32">
-      {/* Print Component - Hidden by default, only shows when printing */}
-      <div className="hidden">
+      {/* Print: small card only (hidden on screen, shown when printing) */}
+      <div className="hidden print:block" data-print-root>
         <PrintMeasurement measurement={measurement} />
       </div>
 
@@ -155,9 +163,9 @@ const MeasurementView: React.FC = () => {
           >
             🖨️ Print / Save as PDF
           </button>
-          {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user.id)) && (
+          {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
             <Link
-              to={`/measurements/edit/${id}`}
+              to={`/measurements/edit/${measurementId}`}
               className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 transition"
             >
               ✏️ Edit
@@ -168,7 +176,7 @@ const MeasurementView: React.FC = () => {
               onClick={async () => {
                 if (window.confirm('Are you sure you want to delete this measurement? This action cannot be undone.')) {
                   try {
-                    await axios.delete(`/api/measurements/${id}`);
+                    await axios.delete(`/api/measurements/${measurementId}`);
                     navigate('/measurements');
                   } catch (err: any) {
                     let errorMsg = 'Failed to delete measurement';
@@ -488,7 +496,7 @@ const MeasurementView: React.FC = () => {
         }`}>
           Change history
         </h2>
-        <MeasurementHistoryTimeline measurementId={id!} />
+        <MeasurementHistoryTimeline measurementId={measurementId} />
       </motion.div>
 
       {/* Garment outcome feedback */}
@@ -507,7 +515,7 @@ const MeasurementView: React.FC = () => {
         }`}>
           Garment fit feedback
         </h2>
-        <GarmentFeedback measurementId={id!} />
+        <GarmentFeedback measurementId={measurementId} />
       </motion.div>
     </div>
   );
