@@ -9,13 +9,25 @@ const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { validateMeasurement } = require('../utils/validation');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
+
+function getIdFromRequest(req) {
+  let id = req.query && req.query.id;
+  if (!id && req.url) {
+    const pathMatch = req.url.split('?')[0].match(/\/api\/measurements\/([^/]+)/);
+    if (pathMatch) id = pathMatch[1];
+  }
+  return id || null;
+}
 
 // GET /api/measurements/:id
 async function getMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    // Vercel dynamic routes: id comes from req.query for [id].js files
-    const id = req.query.id;
+    const id = getIdFromRequest(req);
+    if (!id) {
+      return res.status(400).json({ error: 'Measurement ID is required' });
+    }
 
     const measurements = await query(
       `SELECT 
@@ -52,7 +64,7 @@ async function getMeasurement(req, res) {
       }
     }
 
-    return res.status(200).json(measurement);
+    return res.status(200).json({ data: measurement });
   } catch (error) {
     console.error('Get measurement error:', error);
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
@@ -69,7 +81,8 @@ async function getMeasurement(req, res) {
 async function updateMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    const id = req.query.id;
+    const id = getIdFromRequest(req);
+    if (!id) return res.status(400).json({ error: 'Measurement ID is required' });
 
     if (user.role === 'customer') {
       return res.status(403).json({ error: 'Insufficient permissions' });
@@ -196,11 +209,8 @@ async function updateMeasurement(req, res) {
 async function deleteMeasurement(req, res) {
   try {
     const user = requireAuth(req);
-    const id = req.query.id;
-
-    if (!id) {
-      return res.status(400).json({ error: 'Measurement ID is required' });
-    }
+    const id = getIdFromRequest(req);
+    if (!id) return res.status(400).json({ error: 'Measurement ID is required' });
 
     if (user.role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can delete measurements' });
@@ -246,6 +256,7 @@ async function deleteMeasurement(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') {
     return getMeasurement(req, res);
   } else if (req.method === 'PUT') {

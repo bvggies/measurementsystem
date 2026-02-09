@@ -3,8 +3,8 @@
  * GET /api/customers/consent?customer_id=uuid - Get consent history for customer
  */
 
-const { query } = require('../../utils/db');
-const { requireAuth, requireRole } = require('../../utils/auth');
+const { query } = require('../utils/db');
+const { requireAuth, requireRole } = require('../utils/auth');
 
 async function logConsent(req, res) {
   try {

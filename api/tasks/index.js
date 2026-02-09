@@ -6,6 +6,7 @@
 const { query } = require('../utils/db');
 const { requireAuth, requireRole } = require('../utils/auth');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
 
 async function getTasks(req, res) {
   try {
@@ -91,6 +92,7 @@ async function createTask(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') return getTasks(req, res);
   if (req.method === 'POST') return createTask(req, res);
   return res.status(405).json({ error: 'Method not allowed' });

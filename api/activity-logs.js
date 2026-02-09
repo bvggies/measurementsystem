@@ -5,6 +5,7 @@
 
 const { query } = require('./utils/db');
 const { requireAuth } = require('./utils/auth');
+const { handleCors } = require('./utils/cors');
 
 async function getActivityLogs(req, res) {
   try {
@@ -103,6 +104,7 @@ async function getActivityLogs(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') {
     return getActivityLogs(req, res);
   } else {

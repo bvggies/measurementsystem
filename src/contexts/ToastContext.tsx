@@ -88,10 +88,18 @@ function ToastContainer({ toasts, onDismiss, theme }: ToastContainerProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, x: 100, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className={`pointer-events-auto rounded-xl shadow-lg border px-4 py-3 flex items-center gap-3 ${
+            className={`pointer-events-auto rounded-xl shadow-card-hover border border-l-4 px-4 py-3 flex items-center gap-3 ${
               isDark
                 ? 'bg-dark-surface border-dark-border'
                 : 'bg-white border-gray-200'
+            } ${
+              t.type === 'success'
+                ? 'border-l-emerald'
+                : t.type === 'error'
+                ? 'border-l-crimson'
+                : t.type === 'info' || t.type === 'loading'
+                ? 'border-l-primary-navy dark:border-l-primary-gold'
+                : 'border-l-steel'
             }`}
           >
             <ToastIcon type={t.type} />

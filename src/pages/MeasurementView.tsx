@@ -31,9 +31,11 @@ const MeasurementView: React.FC = () => {
       setError('');
       const response = await axios.get(`/api/measurements/${id}`);
       const data = response?.data;
-      const raw = data && typeof data === 'object' && !Array.isArray(data) ? data : (data?.data ?? data?.measurement ?? null);
-      if (raw && typeof raw === 'object' && !Array.isArray(raw) && (raw.id || raw.entry_id)) {
-        setMeasurement(raw);
+      // API may return { data: measurement } or measurement directly
+      const raw = (data && typeof data === 'object' && (data.data ?? data.measurement)) ?? (data && typeof data === 'object' && !Array.isArray(data) ? data : null);
+      const measurementData = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? raw : null;
+      if (measurementData && (measurementData.id || measurementData.entry_id)) {
+        setMeasurement(measurementData);
       } else {
         setError(data?.error || 'Measurement data is empty or invalid');
       }

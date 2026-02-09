@@ -8,6 +8,7 @@
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
 
 // GET /api/fittings/:id
 async function getFitting(req, res) {
@@ -158,6 +159,7 @@ async function deleteFitting(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') {
     return getFitting(req, res);
   } else if (req.method === 'PUT') {

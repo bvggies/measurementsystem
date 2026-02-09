@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface MeasurementProfile {
   id: string;
@@ -18,6 +19,8 @@ interface MeasurementProfile {
 const CustomerView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [customer, setCustomer] = useState<any>(null);
   const [profiles, setProfiles] = useState<MeasurementProfile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(false);
@@ -129,7 +132,7 @@ const CustomerView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between mb-6"
       >
-        <h1 className="text-3xl font-bold text-primary-navy">Customer Details</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Customer Details</h1>
         <div className="flex gap-2">
           {(user?.role === 'admin' || user?.role === 'manager') && (
             <Link
@@ -147,33 +150,33 @@ const CustomerView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
       >
-        <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Customer Information</h2>
+        <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Customer Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-steel">Name:</p>
-            <p className="font-medium text-primary-navy text-lg">{customer.name || 'N/A'}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Name:</p>
+            <p className={`font-medium text-lg ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.name || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Phone:</p>
-            <p className="font-medium text-primary-navy">{customer.phone || 'N/A'}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Phone:</p>
+            <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.phone || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Email:</p>
-            <p className="font-medium text-primary-navy">{customer.email || 'N/A'}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Email:</p>
+            <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.email || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Address:</p>
-            <p className="font-medium text-primary-navy">{customer.address || 'N/A'}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Address:</p>
+            <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.address || 'N/A'}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Total Measurements:</p>
-            <p className="font-medium text-primary-navy">{customer.measurement_count || 0}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Total Measurements:</p>
+            <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.measurement_count || 0}</p>
           </div>
           <div>
-            <p className="text-sm text-steel">Total Orders:</p>
-            <p className="font-medium text-primary-navy">{customer.order_count || 0}</p>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Total Orders:</p>
+            <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.order_count || 0}</p>
           </div>
         </div>
       </motion.div>
@@ -184,20 +187,20 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Recent Measurements</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Recent Measurements</h2>
           <div className="space-y-2">
             {customer.measurements.map((measurement: any) => (
               <Link
                 key={measurement.id}
                 to={`/measurements/view/${measurement.id}`}
-                className="block p-4 border border-steel-light rounded-lg hover:bg-soft-white transition"
+                className={`block p-4 border rounded-lg transition ${isDark ? 'border-dark-border hover:bg-dark-border/30' : 'border-steel-light hover:bg-soft-white'}`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-primary-navy">Entry ID: {measurement.entry_id}</p>
-                    <p className="text-sm text-steel">
+                    <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Entry ID: {measurement.entry_id}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                       {format(new Date(measurement.created_at), 'MMM dd, yyyy')} • {measurement.units}
                     </p>
                   </div>
@@ -215,9 +218,9 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6 dark:bg-dark-surface dark:border dark:border-dark-border"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy dark:text-dark-text mb-4 border-b pb-2 dark:border-dark-border">Measurement profiles</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Measurement profiles</h2>
           {profilesLoading ? (
             <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold" /></div>
           ) : profiles.length === 0 && !showProfileForm ? (
@@ -225,7 +228,7 @@ const CustomerView: React.FC = () => {
           ) : (
             <ul className="space-y-2 mb-4">
               {profiles.map((p) => (
-                <li key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-dark-bg">
+                <li key={p.id} className={`flex items-center justify-between p-3 rounded-lg ${isDark ? 'bg-dark-bg' : 'bg-gray-50'}`}>
                   <div>
                     <span className="font-medium text-primary-navy dark:text-dark-text">{p.name}</span>
                     <span className="text-sm text-steel dark:text-gray-400 ml-2">({p.profile_type})</span>
@@ -279,25 +282,25 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Upcoming Fittings</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Upcoming Fittings</h2>
           <div className="space-y-2">
             {customer.fittings.map((fitting: any) => (
               <div
                 key={fitting.id}
-                className="p-4 border border-steel-light rounded-lg"
+                className={`p-4 border rounded-lg ${isDark ? 'border-dark-border' : 'border-steel-light'}`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-primary-navy">
+                    <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>
                       {format(new Date(fitting.scheduled_at), 'MMM dd, yyyy HH:mm')}
                     </p>
                     {fitting.tailor_name && (
-                      <p className="text-sm text-steel">Tailor: {fitting.tailor_name}</p>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Tailor: {fitting.tailor_name}</p>
                     )}
                     {fitting.notes && (
-                      <p className="text-sm text-steel mt-1">{fitting.notes}</p>
+                      <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>{fitting.notes}</p>
                     )}
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -319,7 +322,7 @@ const CustomerView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6 text-sm text-steel"
+        className={`rounded-xl shadow-md p-6 text-sm border ${isDark ? 'bg-dark-surface border-dark-border text-gray-400' : 'bg-white border-gray-200 text-steel'}`}
       >
         <p><strong>Created:</strong> {format(new Date(customer.created_at), 'MMM dd, yyyy HH:mm')}</p>
         {customer.updated_at && (

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Fitting {
   id: string;
@@ -22,6 +23,8 @@ interface Fitting {
 
 const Calendar: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [fittings, setFittings] = useState<Fitting[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -206,11 +209,11 @@ const Calendar: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between flex-wrap gap-4"
       >
-        <h1 className="text-3xl font-bold text-primary-navy">Calendar & Fittings</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Calendar & Fittings</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode(viewMode === 'month' ? 'list' : 'month')}
-            className="px-4 py-2 border border-steel-light text-steel rounded-lg hover:bg-soft-white transition"
+            className={`px-4 py-2 border rounded-lg transition ${isDark ? 'border-dark-border text-gray-300 hover:bg-dark-border/50' : 'border-steel-light text-steel hover:bg-soft-white'}`}
           >
             {viewMode === 'month' ? '📋 List View' : '📅 Month View'}
           </button>
@@ -229,7 +232,7 @@ const Calendar: React.FC = () => {
                 });
                 setShowAddModal(true);
               }}
-              className="px-4 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition"
+              className="px-4 py-2 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 transition dark:bg-primary-gold dark:text-primary-navy dark:hover:bg-primary-gold/90"
             >
               + New Fitting
             </button>
@@ -241,22 +244,22 @@ const Calendar: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className={`p-2 rounded-lg transition ${isDark ? 'hover:bg-dark-border text-gray-300' : 'hover:bg-gray-100'}`}
             >
               ←
             </button>
-            <h2 className="text-2xl font-bold text-primary-navy">
+            <h2 className={`text-2xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>
               {format(currentDate, 'MMMM yyyy')}
             </h2>
             <button
               onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className={`p-2 rounded-lg transition ${isDark ? 'hover:bg-dark-border text-gray-300' : 'hover:bg-gray-100'}`}
             >
               →
             </button>
@@ -265,7 +268,7 @@ const Calendar: React.FC = () => {
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="text-center font-semibold text-steel py-2">
+              <div key={day} className={`text-center font-semibold py-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                 {day}
               </div>
             ))}
@@ -281,11 +284,11 @@ const Calendar: React.FC = () => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.01 }}
                   onClick={() => handleDateClick(day)}
-                  className={`min-h-[100px] p-2 border border-steel-light rounded-lg cursor-pointer hover:bg-soft-white transition ${
-                    !isCurrentMonth ? 'opacity-30' : ''
-                  } ${isToday ? 'ring-2 ring-primary-gold' : ''}`}
+                  className={`min-h-[100px] p-2 border rounded-lg cursor-pointer transition ${
+                    isDark ? 'border-dark-border hover:bg-dark-border/30' : 'border-steel-light hover:bg-soft-white'
+                  } ${!isCurrentMonth ? 'opacity-30' : ''} ${isToday ? 'ring-2 ring-primary-gold' : ''}`}
                 >
-                  <div className={`text-sm font-medium mb-1 ${isToday ? 'text-primary-gold' : 'text-steel'}`}>
+                  <div className={`text-sm font-medium mb-1 ${isToday ? 'text-primary-gold' : isDark ? 'text-gray-400' : 'text-steel'}`}>
                     {format(day, 'd')}
                   </div>
                   <div className="space-y-1">
@@ -303,7 +306,7 @@ const Calendar: React.FC = () => {
                       </div>
                     ))}
                     {dayFittings.length > 3 && (
-                      <div className="text-xs text-steel">+{dayFittings.length - 3} more</div>
+                      <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-steel'}`}>+{dayFittings.length - 3} more</div>
                     )}
                   </div>
                 </motion.div>
@@ -315,41 +318,41 @@ const Calendar: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-white rounded-xl shadow-md overflow-hidden"
+          className={`rounded-xl shadow-md overflow-hidden border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-bold text-primary-navy">Upcoming Fittings</h2>
+          <div className={`p-6 border-b ${isDark ? 'border-dark-border' : 'border-steel-light'}`}>
+            <h2 className={`text-xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Upcoming Fittings</h2>
           </div>
           {loading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-navy mx-auto"></div>
+              <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mx-auto ${isDark ? 'border-primary-gold' : 'border-primary-navy'}`}></div>
             </div>
           ) : upcomingFittings.length === 0 ? (
-            <div className="p-8 text-center text-steel">No upcoming fittings</div>
+            <div className={`p-8 text-center ${isDark ? 'text-gray-400' : 'text-steel'}`}>No upcoming fittings</div>
           ) : (
-            <div className="divide-y divide-steel-light">
+            <div className={isDark ? 'divide-y divide-dark-border' : 'divide-y divide-steel-light'}>
               {upcomingFittings.map((fitting) => (
                 <div
                   key={fitting.id}
                   onClick={() => handleFittingClick(fitting)}
-                  className="p-4 hover:bg-soft-white cursor-pointer transition"
+                  className={`p-4 cursor-pointer transition ${isDark ? 'hover:bg-dark-border/30' : 'hover:bg-soft-white'}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-primary-navy">{fitting.customer_name}</h3>
+                        <h3 className={`font-semibold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{fitting.customer_name}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(fitting.status)}`}>
                           {fitting.status}
                         </span>
                       </div>
-                      <p className="text-sm text-steel mt-1">
+                      <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                         {format(new Date(fitting.scheduled_at), 'MMM dd, yyyy HH:mm')}
                       </p>
                       {fitting.tailor_name && (
-                        <p className="text-sm text-steel">Tailor: {fitting.tailor_name}</p>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Tailor: {fitting.tailor_name}</p>
                       )}
                       {fitting.notes && (
-                        <p className="text-sm text-steel mt-1">{fitting.notes}</p>
+                        <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>{fitting.notes}</p>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -360,7 +363,7 @@ const Calendar: React.FC = () => {
                           handleStatusChange(fitting.id, e.target.value);
                         }}
                         onClick={(e) => e.stopPropagation()}
-                        className="px-3 py-1 border border-steel-light rounded-lg text-sm"
+                        className={`px-3 py-1 border rounded-lg text-sm ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-steel-light'}`}
                       >
                         <option value="scheduled">Scheduled</option>
                         <option value="completed">Completed</option>
@@ -381,28 +384,28 @@ const Calendar: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className={`rounded-xl shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
           >
-            <h2 className="text-2xl font-bold text-primary-navy mb-4">Fitting Details</h2>
+            <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Fitting Details</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-steel mb-1">Customer</label>
-                <p className="text-primary-navy font-medium">{selectedFitting.customer_name}</p>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Customer</label>
+                <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{selectedFitting.customer_name}</p>
                 {selectedFitting.customer_phone && (
-                  <p className="text-sm text-steel">{selectedFitting.customer_phone}</p>
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>{selectedFitting.customer_phone}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-1">Scheduled At</label>
-                <p className="text-primary-navy">
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Scheduled At</label>
+                <p className={isDark ? 'text-dark-text' : 'text-primary-navy'}>
                   {format(new Date(selectedFitting.scheduled_at), 'MMM dd, yyyy HH:mm')}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-1">Status</label>
+                <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Status</label>
                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedFitting.status)}`}>
                   {selectedFitting.status}
                 </span>
@@ -410,15 +413,15 @@ const Calendar: React.FC = () => {
 
               {selectedFitting.tailor_name && (
                 <div>
-                  <label className="block text-sm font-medium text-steel mb-1">Tailor</label>
-                  <p className="text-primary-navy">{selectedFitting.tailor_name}</p>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Tailor</label>
+                  <p className={isDark ? 'text-dark-text' : 'text-primary-navy'}>{selectedFitting.tailor_name}</p>
                 </div>
               )}
 
               {selectedFitting.notes && (
                 <div>
-                  <label className="block text-sm font-medium text-steel mb-1">Notes</label>
-                  <p className="text-steel">{selectedFitting.notes}</p>
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Notes</label>
+                  <p className={isDark ? 'text-gray-400' : 'text-steel'}>{selectedFitting.notes}</p>
                 </div>
               )}
 
@@ -440,7 +443,7 @@ const Calendar: React.FC = () => {
               )}
             </div>
 
-            <div className="flex gap-4 pt-6 mt-6 border-t">
+            <div className={`flex gap-4 pt-6 mt-6 border-t ${isDark ? 'border-dark-border' : 'border-steel-light'}`}>
               {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && selectedFitting.tailor_id === user.id)) && (
                 <>
                   <button
@@ -457,7 +460,7 @@ const Calendar: React.FC = () => {
                       setShowFittingModal(false);
                       setShowAddModal(true);
                     }}
-                    className="flex-1 px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 transition"
+                    className="flex-1 px-4 py-2 bg-primary-gold text-primary-navy rounded-lg hover:bg-opacity-90 transition"
                   >
                     Edit
                   </button>
@@ -474,7 +477,7 @@ const Calendar: React.FC = () => {
                   setShowFittingModal(false);
                   setSelectedFitting(null);
                 }}
-                className="flex-1 px-4 py-2 border border-steel-light text-steel rounded-lg hover:bg-soft-white transition"
+                className={`flex-1 px-4 py-2 border rounded-lg transition ${isDark ? 'border-dark-border text-gray-300 hover:bg-dark-border/50' : 'border-steel-light text-steel hover:bg-soft-white'}`}
               >
                 Close
               </button>
@@ -489,11 +492,34 @@ const Calendar: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-dark-surface rounded-xl shadow-xl p-6 max-w-md w-full my-8 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-dark-border"
+            className="bg-white dark:bg-dark-surface rounded-xl shadow-xl p-6 max-w-md w-full my-8 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-dark-border relative"
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-navy dark:text-dark-text mb-4">
-              {selectedFitting ? 'Edit Fitting' : 'New Fitting'}
-            </h2>
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-navy dark:text-dark-text">
+                {selectedFitting ? 'Edit Fitting' : 'New Fitting'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setSelectedFitting(null);
+                  setFormData({
+                    customer_id: '',
+                    measurement_id: '',
+                    tailor_id: user?.role === 'tailor' ? user.id || '' : '',
+                    scheduled_at: '',
+                    status: 'scheduled',
+                    notes: '',
+                    branch: '',
+                  });
+                  setError('');
+                }}
+                className="shrink-0 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                aria-label="Close"
+              >
+                <span className="text-xl leading-none">×</span>
+              </button>
+            </div>
 
             {error && (
               <div className="mb-4 p-4 bg-crimson/10 border border-crimson rounded-lg text-crimson text-sm">
@@ -561,22 +587,22 @@ const Calendar: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Scheduled Date & Time *</label>
+                <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Scheduled Date & Time *</label>
                 <input
                   type="datetime-local"
                   value={formData.scheduled_at}
                   onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className="w-full px-4 py-2 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Status</label>
+                <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className="w-full px-4 py-2 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
                 >
                   <option value="scheduled">Scheduled</option>
                   <option value="completed">Completed</option>
@@ -585,12 +611,12 @@ const Calendar: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Notes</label>
+                <label className="block text-sm font-medium text-steel dark:text-gray-400 mb-2">Notes</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className="w-full px-4 py-2 border border-steel-light dark:border-dark-border dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary-gold"
                 />
               </div>
 
@@ -611,7 +637,7 @@ const Calendar: React.FC = () => {
                     });
                     setError('');
                   }}
-                  className="flex-1 px-4 py-2 border border-steel-light text-steel rounded-lg hover:bg-soft-white transition-colors"
+                  className="flex-1 px-4 py-2 border border-steel-light dark:border-dark-border text-steel dark:text-gray-300 rounded-lg hover:bg-soft-white dark:hover:bg-dark-border/50 transition-colors"
                 >
                   Cancel
                 </button>

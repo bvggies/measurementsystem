@@ -2,8 +2,8 @@
  * GET /api/templates/:id - Get single measurement template
  */
 
-const { query } = require('../../utils/db');
-const { requireAuth } = require('../../utils/auth');
+const { query } = require('../utils/db');
+const { requireAuth } = require('../utils/auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {

@@ -6,6 +6,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { handleCors } = require('../utils/cors');
 
 function runRule(rule, data) {
   const a = data[rule.field_a];
@@ -40,6 +41,7 @@ function runRule(rule, data) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

@@ -7,6 +7,7 @@
 const { query } = require('./utils/db');
 const { requireAuth } = require('./utils/auth');
 const { logAudit } = require('./utils/audit');
+const { handleCors } = require('./utils/cors');
 
 // GET /api/settings
 async function getSettings(req, res) {
@@ -162,6 +163,7 @@ async function updateSettings(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   // Set cache-control headers
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');

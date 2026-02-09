@@ -54,6 +54,17 @@ const defaultSettings: SystemSettings = {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
+function applyColorsToDocument(colors: SystemSettings['colors']) {
+  if (!colors) return;
+  const root = document.documentElement;
+  root.style.setProperty('--color-primary-navy', colors.primaryNavy);
+  root.style.setProperty('--color-primary-gold', colors.primaryGold);
+  root.style.setProperty('--color-steel', colors.steel);
+  root.style.setProperty('--color-soft-white', colors.softWhite);
+  root.style.setProperty('--color-emerald', colors.emerald);
+  root.style.setProperty('--color-crimson', colors.crimson);
+}
+
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
@@ -61,13 +72,18 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const fetchSettings = async () => {
     try {
       const response = await axios.get('/api/settings');
+      const merged = { ...defaultSettings, ...response.data };
       if (response.data) {
-        setSettings({ ...defaultSettings, ...response.data });
+        setSettings(merged);
+        // Apply saved color scheme so it works on load
+        applyColorsToDocument(merged.colors || defaultSettings.colors);
+        if (merged.websiteTitle) {
+          document.title = merged.websiteTitle;
+        }
       }
     } catch (error: any) {
       console.error('Failed to fetch settings:', error);
       console.error('Error details:', error.response?.data);
-      // Use default settings if API fails
       setSettings(defaultSettings);
     } finally {
       setLoading(false);
@@ -78,25 +94,14 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       const updated = { ...settings, ...newSettings };
       const response = await axios.put('/api/settings', updated);
-      // Use response data if available, otherwise use updated
       const finalSettings = response.data?.settings || updated;
       setSettings(finalSettings);
-      
-      // Update document title
-      if (newSettings.websiteTitle) {
-        document.title = newSettings.websiteTitle;
+
+      // Apply all settings that affect the document
+      if (finalSettings.websiteTitle) {
+        document.title = finalSettings.websiteTitle;
       }
-      
-      // Update CSS variables for colors
-      if (newSettings.colors) {
-        const root = document.documentElement;
-        root.style.setProperty('--color-primary-navy', newSettings.colors.primaryNavy);
-        root.style.setProperty('--color-primary-gold', newSettings.colors.primaryGold);
-        root.style.setProperty('--color-steel', newSettings.colors.steel);
-        root.style.setProperty('--color-soft-white', newSettings.colors.softWhite);
-        root.style.setProperty('--color-emerald', newSettings.colors.emerald);
-        root.style.setProperty('--color-crimson', newSettings.colors.crimson);
-      }
+      applyColorsToDocument(finalSettings.colors || defaultSettings.colors);
     } catch (error: any) {
       console.error('Failed to update settings:', error);
       const data = error.response?.data;

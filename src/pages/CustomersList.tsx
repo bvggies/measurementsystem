@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 import { SkeletonTable } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
@@ -22,8 +23,10 @@ interface Customer {
 
 const CustomersList: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -41,6 +44,45 @@ const CustomersList: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllOnPage = () => {
+    if (selectedIds.size === customers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(customers.map((c) => c.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} customer(s)? This cannot be undone. Customers with measurements may not be deleted.`)) return;
+    let done = 0;
+    let failed = 0;
+    for (const id of Array.from(selectedIds)) {
+      try {
+        await axios.delete(`/api/customers/${id}`);
+        done++;
+      } catch {
+        failed++;
+      }
+    }
+    setSelectedIds(new Set());
+    await fetchCustomers();
+    if (failed > 0) toast(`${done} deleted, ${failed} failed`, 'error');
+    else toast(`${done} customer(s) deleted`, 'success');
+  };
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -67,6 +109,10 @@ const CustomersList: React.FC = () => {
     fetchCustomers();
   }, [fetchCustomers]);
 
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
@@ -83,7 +129,8 @@ const CustomersList: React.FC = () => {
         await fetchCustomers();
         toast('Customer deleted successfully', 'success');
       } catch (err: any) {
-        const errorMsg = err.response?.data?.error || 'Failed to delete customer';
+        let errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to delete customer';
+        if (errorMsg === '_t' || (typeof errorMsg === 'string' && !errorMsg.trim())) errorMsg = 'Failed to delete customer';
         toast(errorMsg, 'error');
         console.error('Delete error:', err);
       }
@@ -120,11 +167,13 @@ const CustomersList: React.FC = () => {
       await fetchCustomers();
       toast(editingCustomer ? 'Customer updated' : 'Customer added', 'success');
     } catch (err: any) {
-      const msg =
+      let msg =
         (err.response?.data && (typeof err.response.data.error === 'string' ? err.response.data.error : err.response.data.message)) ||
-        (typeof err.message === 'string' ? err.message : 'Failed to save customer');
-      setError(msg || 'Failed to save customer');
-      toast(msg || 'Failed to save customer', 'error');
+        (typeof err.message === 'string' ? err.message : '');
+      if (msg === '_t' || !msg?.trim()) msg = 'Failed to save customer';
+      msg = msg || 'Failed to save customer';
+      setError(msg);
+      toast(msg, 'error');
       console.error('Save error:', err?.response?.data || err);
     } finally {
       setSaving(false);
@@ -153,7 +202,7 @@ const CustomersList: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-dark-border"
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-primary-navy dark:text-dark-text">Customers</h1>
         {(user?.role === 'admin' || user?.role === 'manager') && (
@@ -214,29 +263,63 @@ const CustomersList: React.FC = () => {
           />
         ) : (
           <>
+            {/* Bulk actions bar */}
+            {selectedIds.size > 0 && (
+              <div className={`flex flex-wrap items-center gap-3 px-4 py-3 border-b ${isDark ? 'border-dark-border bg-dark-border/30' : 'border-steel-light bg-soft-white'}`}>
+                <span className={`font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{selectedIds.size} selected</span>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className={`text-sm text-steel transition ${isDark ? 'hover:text-primary-gold' : 'hover:text-primary-navy'}`}
+                >
+                  Clear
+                </button>
+                {user?.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDelete}
+                    className="text-sm px-3 py-1.5 rounded-lg bg-crimson text-white hover:bg-crimson/90 transition"
+                  >
+                    Delete selected
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px]">
-                <thead className="bg-soft-white">
+                <thead className={isDark ? 'bg-dark-border/50' : 'bg-soft-white'}>
                   <tr>
+                    <th className="w-10 px-2 py-3">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={customers.length > 0 && selectedIds.size === customers.length}
+                          ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < customers.length; }}
+                          onChange={selectAllOnPage}
+                          className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold w-4 h-4"
+                        />
+                      </label>
+                    </th>
                     <th
-                      className="px-6 py-3 text-left text-xs font-medium text-steel uppercase cursor-pointer hover:bg-gray-100"
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase cursor-pointer ${isDark ? 'text-gray-400 hover:bg-dark-border/50' : 'text-steel hover:bg-gray-100'}`}
                       onClick={() => handleSort('name')}
                     >
                       Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-steel uppercase">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-steel uppercase">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-steel uppercase">Measurements</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-steel'}`}>Phone</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-steel'}`}>Email</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-steel'}`}>Measurements</th>
                     <th
-                      className="px-6 py-3 text-left text-xs font-medium text-steel uppercase cursor-pointer hover:bg-gray-100"
+                      className={`px-6 py-3 text-left text-xs font-medium uppercase cursor-pointer ${isDark ? 'text-gray-400 hover:bg-dark-border/50' : 'text-steel hover:bg-gray-100'}`}
                       onClick={() => handleSort('created_at')}
                     >
                       Created {sortBy === 'created_at' && (sortOrder === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-steel uppercase">Actions</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-steel'}`}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-steel-light">
+                <tbody className={`divide-y ${isDark ? 'divide-dark-border' : 'divide-steel-light'}`}>
                   {customers.map((customer, index) => (
                     <motion.tr
                       key={customer.id}
@@ -244,24 +327,35 @@ const CustomersList: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       data-aos="fade-right"
-                      className="hover:bg-soft-white cursor-pointer"
+                      className={`cursor-pointer transition-colors duration-150 ${isDark ? 'hover:bg-dark-border/30' : 'hover:bg-soft-white'}`}
                       onClick={() => navigate(`/customers/${customer.id}`)}
+                      style={{ backgroundColor: selectedIds.has(customer.id) ? 'rgba(212, 175, 55, 0.1)' : undefined }}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-primary-navy">{customer.name}</div>
+                      <td className="w-10 px-2 py-4" onClick={(e) => e.stopPropagation()}>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(customer.id)}
+                            onChange={() => toggleOne(customer.id)}
+                            className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold w-4 h-4"
+                          />
+                        </label>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={`text-sm font-medium ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.name}</div>
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                         {customer.phone || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                         {customer.email || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                         <span className="px-2 py-1 bg-primary-gold bg-opacity-20 text-primary-gold rounded-full text-xs font-medium">
                           {customer.measurement_count || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-steel">
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>
                         {format(new Date(customer.created_at), 'MMM dd, yyyy')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -324,9 +418,9 @@ const CustomersList: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className={`rounded-xl shadow-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
           >
-            <h2 className="text-2xl font-bold text-primary-navy mb-4">
+            <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>
               {editingCustomer ? 'Edit Customer' : 'New Customer'}
             </h2>
 
@@ -338,43 +432,43 @@ const CustomersList: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Name *</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Name *</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-steel-light'}`}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Phone</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Phone</label>
                 <input
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-steel-light'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Email</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-steel-light'}`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-steel mb-2">Address</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Address</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2 border border-steel-light rounded-lg focus:ring-2 focus:ring-primary-gold"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-steel-light'}`}
                 />
               </div>
 
@@ -387,7 +481,7 @@ const CustomersList: React.FC = () => {
                     setFormData({ name: '', phone: '', email: '', address: '' });
                     setError('');
                   }}
-                  className="flex-1 px-4 py-2 border border-steel-light text-steel rounded-lg hover:bg-soft-white transition-colors"
+                  className={`flex-1 px-4 py-2 border rounded-lg transition-colors ${isDark ? 'border-dark-border text-gray-300 hover:bg-dark-border/50' : 'border-steel-light text-steel hover:bg-soft-white'}`}
                 >
                   Cancel
                 </button>

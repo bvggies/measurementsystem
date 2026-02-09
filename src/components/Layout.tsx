@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSettings } from '../contexts/SettingsContext';
 import GlobalSearch from './GlobalSearch';
 import BottomNav from './BottomNav';
 import InstallButton from './InstallButton';
 import ThemeToggle from './ThemeToggle';
 import NotificationsDropdown from './NotificationsDropdown';
 import Footer from './Footer';
+import TailoringBackground from './TailoringBackground';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Scroll to top when navigating to a new page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: '📊', roles: ['admin', 'manager', 'tailor', 'customer'] },
@@ -39,11 +46,15 @@ const Layout: React.FC = () => {
   };
 
   const { theme } = useTheme();
+  const { settings } = useSettings();
+  const appName = settings.name || 'FitTrack';
+  const appLogo = settings.logo || '/applogo.png';
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
+    <div className={`min-h-screen transition-colors duration-200 relative ${
       theme === 'dark' ? 'bg-dark-bg text-dark-text' : 'bg-gray-50'
     }`}>
+      <TailoringBackground />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-gold focus:text-primary-navy focus:rounded-lg font-medium"
@@ -59,14 +70,14 @@ const Layout: React.FC = () => {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b">
+          <div className={`flex items-center justify-between p-4 border-b ${theme === 'dark' ? 'border-dark-border' : 'border-gray-200'}`}>
             <div className="flex items-center space-x-2">
-              <img src="/applogo.png" alt="FitTrack" className="h-8 w-8" />
-              <h1 className="text-xl font-bold text-primary-navy">FitTrack</h1>
+              <img src={appLogo} alt={appName} className="h-8 w-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/applogo.png'; }} />
+              <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'}`}>{appName}</h1>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-2 rounded-lg hover:bg-gray-100"
+              className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-dark-border text-gray-300' : 'hover:bg-gray-100'}`}
             >
               ✕
             </button>
@@ -77,9 +88,11 @@ const Layout: React.FC = () => {
                 key={item.name}
                 to={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 active:scale-[0.98] ${
                   location.pathname === item.href
-                    ? 'bg-primary-navy text-white'
+                    ? 'bg-primary-navy text-white dark:bg-primary-gold dark:text-primary-navy'
+                    : theme === 'dark'
+                    ? 'text-gray-300 hover:bg-dark-border/50'
                     : 'text-steel hover:bg-gray-100'
                 }`}
               >
@@ -98,10 +111,10 @@ const Layout: React.FC = () => {
         }`}
         aria-label="Main navigation"
       >
-        <div className="flex items-center p-4 border-b shrink-0">
+        <div className={`flex items-center p-4 border-b shrink-0 ${theme === 'dark' ? 'border-dark-border' : 'border-gray-200'}`}>
           <div className="flex items-center gap-2 min-w-0">
-            <img src="/applogo.png" alt="FitTrack" className="h-8 w-8 shrink-0" />
-            <span className="text-lg font-bold text-primary-navy dark:text-dark-text truncate">FitTrack</span>
+            <img src={appLogo} alt={appName} className="h-8 w-8 shrink-0 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/applogo.png'; }} />
+            <span className="text-lg font-bold text-primary-navy dark:text-dark-text truncate">{appName}</span>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -111,7 +124,7 @@ const Layout: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98] ${
                   isActive
                     ? 'bg-primary-navy text-white dark:bg-primary-gold dark:text-primary-navy'
                     : theme === 'dark'
@@ -142,7 +155,7 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64 flex flex-col min-h-screen">
+      <div className="lg:pl-64 flex flex-col min-h-screen relative z-10">
         {/* Top bar - compact on mobile with safe area */}
         <header
           className={`sticky top-0 z-30 shadow-sm ${

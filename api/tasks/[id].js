@@ -4,9 +4,9 @@
  * DELETE /api/tasks/:id - Delete task (admin/manager)
  */
 
-const { query } = require('../../utils/db');
-const { requireAuth, requireRole } = require('../../utils/auth');
-const { logAudit } = require('../../utils/audit');
+const { query } = require('../utils/db');
+const { requireAuth, requireRole } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
 
 async function getTask(req, res) {
   try {

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from '../utils/api';
 import { ImportRow } from '../utils/importParser';
+import { useTheme } from '../contexts/ThemeContext';
 
 const ImportPage: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -83,7 +86,7 @@ const ImportPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
-        <h1 className="text-3xl font-bold text-gray-900">Import Measurements</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Import Measurements</h1>
       </motion.div>
 
       {/* File Upload */}
@@ -91,12 +94,12 @@ const ImportPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className="bg-white rounded-xl shadow-md p-6"
+        className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
       >
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Upload File</h2>
+        <h2 className={`text-xl font-bold mb-4 ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Upload File</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
               Select CSV or Excel file
             </label>
             <input
@@ -128,34 +131,34 @@ const ImportPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Preview</h2>
-            <div className="text-sm text-gray-600">
+            <h2 className={`text-xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Preview</h2>
+            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               {preview.statistics.validRows} valid / {preview.statistics.totalRows} total
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className={isDark ? 'bg-dark-border/50' : 'bg-gray-50'}>
                 <tr>
-                  <th className="px-4 py-2 text-left">Row</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Customer</th>
-                  <th className="px-4 py-2 text-left">Phone</th>
-                  <th className="px-4 py-2 text-left">Errors</th>
+                  <th className={`px-4 py-2 text-left ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Row</th>
+                  <th className={`px-4 py-2 text-left ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Status</th>
+                  <th className={`px-4 py-2 text-left ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Customer</th>
+                  <th className={`px-4 py-2 text-left ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Phone</th>
+                  <th className={`px-4 py-2 text-left ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Errors</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className={isDark ? 'divide-y divide-dark-border' : 'divide-y divide-gray-200'}>
                 {preview.preview.rows.map((row: ImportRow) => (
                   <tr
                     key={row.rowNumber}
-                    className={row.isValid ? 'bg-white' : 'bg-red-50'}
+                    className={row.isValid ? (isDark ? 'bg-dark-bg' : 'bg-white') : (isDark ? 'bg-red-900/20' : 'bg-red-50')}
                   >
-                    <td className="px-4 py-2">{row.rowNumber}</td>
-                    <td className="px-4 py-2">
+                    <td className={`px-4 py-2 ${isDark ? 'text-dark-text' : ''}`}>{row.rowNumber}</td>
+                    <td className={`px-4 py-2 ${isDark ? 'text-dark-text' : ''}`}>
                       <span
                         className={`px-2 py-1 rounded text-xs ${
                           row.isValid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -164,9 +167,9 @@ const ImportPage: React.FC = () => {
                         {row.isValid ? 'Valid' : 'Invalid'}
                       </span>
                     </td>
-                    <td className="px-4 py-2">{row.data.client_name || 'N/A'}</td>
-                    <td className="px-4 py-2">{row.data.client_phone || 'N/A'}</td>
-                    <td className="px-4 py-2 text-red-600 text-xs">
+                    <td className={`px-4 py-2 ${isDark ? 'text-dark-text' : ''}`}>{row.data.client_name || 'N/A'}</td>
+                    <td className={`px-4 py-2 ${isDark ? 'text-dark-text' : ''}`}>{row.data.client_phone || 'N/A'}</td>
+                    <td className={`px-4 py-2 text-xs ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                       {row.errors.join(', ')}
                     </td>
                   </tr>
@@ -192,16 +195,16 @@ const ImportPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Import Result</h2>
-          <div className="space-y-2">
+          <h2 className={`text-xl font-bold mb-4 ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Import Result</h2>
+          <div className={`space-y-2 ${isDark ? 'text-gray-300' : ''}`}>
             <p>Successfully imported: {result.successCount} rows</p>
             <p>Failed: {result.failedCount} rows</p>
             {result.errors && result.errors.length > 0 && (
               <div className="mt-4">
-                <h3 className="font-medium text-gray-900 mb-2">Errors:</h3>
-                <ul className="list-disc list-inside text-sm text-red-600">
+                <h3 className={`font-medium mb-2 ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Errors:</h3>
+                <ul className={`list-disc list-inside text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                   {result.errors.slice(0, 10).map((err: any, idx: number) => (
                     <li key={idx}>Row {err.rowNumber}: {err.errors?.join(', ') || err.error}</li>
                   ))}

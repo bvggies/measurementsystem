@@ -28,8 +28,8 @@ axios.interceptors.request.use(
       // localStorage not available, continue without token
     }
     
-    // Add cache-busting to API requests
-    if (config.url && config.url.startsWith('/api/')) {
+    // Add cache-busting to GET requests only (avoids _t leaking into error responses on mutations)
+    if (config.url && config.url.startsWith('/api/') && (config.method || 'get').toLowerCase() === 'get') {
       const separator = config.url.includes('?') ? '&' : '?';
       config.url = `${config.url}${separator}_t=${Date.now()}`;
     }

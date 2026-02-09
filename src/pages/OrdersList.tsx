@@ -539,10 +539,10 @@ const OrdersList: React.FC = () => {
                     setEditingOrder(null);
                     setError('');
                   }}
-                  className={`flex-1 px-4 py-2 border rounded-lg hover:bg-soft-white transition-colors duration-200 ${
-                    theme === 'dark' 
-                      ? 'border-dark-border text-dark-text hover:bg-dark-bg' 
-                      : 'border-steel-light text-steel'
+                  className={`flex-1 px-4 py-2 border rounded-lg transition-colors duration-200 ${
+                    theme === 'dark'
+                      ? 'border-dark-border text-gray-300 hover:bg-dark-surface'
+                      : 'border-steel-light text-steel hover:bg-soft-white'
                   }`}
                 >
                   Cancel

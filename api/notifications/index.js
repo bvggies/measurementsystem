@@ -1,5 +1,6 @@
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { handleCors } = require('../utils/cors');
 
 async function getNotifications(req, res) {
   try {
@@ -24,6 +25,7 @@ async function getNotifications(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') return getNotifications(req, res);
   return res.status(405).json({ error: 'Method not allowed' });
 };

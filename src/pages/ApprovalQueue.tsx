@@ -7,13 +7,24 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../contexts/ToastContext';
 
 interface PendingItem {
-  id: string;
+  id?: string;
   measurement_id: string;
-  entry_id: string;
-  customer_name: string;
-  customer_phone: string;
+  entry_id?: string;
+  customer_name?: string;
+  customer_phone?: string;
   requested_at: string;
-  requested_by_name: string | null;
+  requested_by_name?: string | null;
+}
+
+function safeFormatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '—';
+    return format(d, 'MMM dd, yyyy HH:mm');
+  } catch {
+    return '—';
+  }
 }
 
 const ApprovalQueue: React.FC = () => {
@@ -21,19 +32,26 @@ const ApprovalQueue: React.FC = () => {
   const { toast } = useToast();
   const [pending, setPending] = useState<PendingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const isDark = theme === 'dark';
   const cardBg = isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200';
 
   const fetchPending = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axios.get('/api/measurements/approval');
-      setPending(res.data?.pending || []);
+      const data = res?.data;
+      const list = Array.isArray(data?.pending) ? data.pending : [];
+      setPending(list);
     } catch (err: any) {
-      if (err.response?.status === 501) {
-        setPending([]);
+      setPending([]);
+      if (err.response?.status === 501 || err.response?.status === 403) {
+        setError(err.response?.data?.error || 'Approval queue not available');
       } else {
-        toast(err.response?.data?.error || 'Failed to load approval queue', 'error');
+        const msg = err.response?.data?.error || err.message || 'Failed to load approval queue';
+        setError(msg);
+        toast(msg, 'error');
       }
     } finally {
       setLoading(false);
@@ -83,7 +101,11 @@ const ApprovalQueue: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-gold border-t-transparent" />
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-gold border-t-transparent rounded-full" />
+        </div>
+      ) : error ? (
+        <div className={`${cardBg} rounded-xl border p-8 text-center`}>
+          <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{error}</p>
         </div>
       ) : pending.length === 0 ? (
         <div className={`${cardBg} rounded-xl border p-8 text-center`}>
@@ -93,20 +115,19 @@ const ApprovalQueue: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {pending.map((item) => (
+          {pending.map((item, index) => (
             <motion.div
-              key={item.measurement_id}
+              key={item.measurement_id || item.id || `pending-${index}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className={`${cardBg} rounded-xl border p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4`}
             >
               <div>
                 <p className={`font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
-                  {item.entry_id} · {item.customer_name || 'N/A'}
+                  {item.entry_id || '—'} · {item.customer_name || 'N/A'}
                 </p>
                 <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Requested by {item.requested_by_name || 'Customer'} on{' '}
-                  {format(new Date(item.requested_at), 'MMM dd, yyyy HH:mm')}
+                  Requested by {item.requested_by_name || 'Customer'} on {safeFormatDate(item.requested_at)}
                 </p>
               </div>
               <div className="flex gap-2 flex-shrink-0">

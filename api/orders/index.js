@@ -7,6 +7,7 @@
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
 
 // GET /api/orders
 async function getOrders(req, res) {
@@ -150,6 +151,7 @@ async function createOrder(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   try {
     if (req.method === 'GET') {
       return await getOrders(req, res);

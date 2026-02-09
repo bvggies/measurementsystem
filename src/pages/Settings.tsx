@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSettings } from '../contexts/SettingsContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Settings: React.FC = () => {
   const { settings, updateSettings, loading: settingsLoading } = useSettings();
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [formData, setFormData] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
@@ -17,14 +20,22 @@ const Settings: React.FC = () => {
     setLogoPreview(settings.logo);
   }, [settings]);
 
+  const normalizeHex = (val: string): string => {
+    let v = val.trim().replace(/^#/, '');
+    if (/^[0-9A-Fa-f]{3}$/.test(v)) v = v[0] + v[0] + v[1] + v[1] + v[2] + v[2];
+    if (/^[0-9A-Fa-f]{6}$/.test(v)) return '#' + v;
+    return val;
+  };
+
   const handleChange = (field: string, value: any) => {
     if (field.startsWith('colors.')) {
       const colorKey = field.split('.')[1];
+      const normalized = typeof value === 'string' && (value.startsWith('#') || /^[0-9A-Fa-f]{3,6}$/.test(value.trim())) ? normalizeHex(value) : value;
       setFormData({
         ...formData,
         colors: {
-          ...formData.colors,
-          [colorKey]: value,
+          ...(formData.colors || settings.colors),
+          [colorKey]: normalized,
         },
       });
     } else {
@@ -75,7 +86,7 @@ const Settings: React.FC = () => {
       // Ensure all required fields are present
       const settingsToSave = {
         ...formData,
-        colors: formData.colors || settings.colors,
+        colors: (formData.colors && Object.keys(formData.colors).length > 0 ? formData.colors : settings.colors) || settings.colors,
       };
       await updateSettings(settingsToSave);
       setSuccess('Settings saved successfully!');
@@ -131,7 +142,7 @@ const Settings: React.FC = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold text-primary-navy">System Settings</h1>
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>System Settings</h1>
           <p className="text-steel mt-1">Configure your system preferences</p>
         </div>
       </motion.div>
@@ -162,37 +173,37 @@ const Settings: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Basic Information</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">System Name</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>System Name</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="FitTrack"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Tagline</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Tagline</label>
               <input
                 type="text"
                 value={formData.tagline}
                 onChange={(e) => handleChange('tagline', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="Tailoring Measurement System"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-steel mb-2">Website Title</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Website Title</label>
               <input
                 type="text"
                 value={formData.websiteTitle}
                 onChange={(e) => handleChange('websiteTitle', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="FitTrack - Tailoring Measurement System"
               />
             </div>
@@ -205,27 +216,27 @@ const Settings: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Logo</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Logo</h2>
           <div className="flex items-center gap-6">
             <div className="flex-shrink-0">
               <img
                 src={logoPreview}
                 alt="Logo Preview"
-                className="w-24 h-24 object-contain border border-gray-300 rounded-lg p-2"
+                className={`w-24 h-24 object-contain border rounded-lg p-2 ${isDark ? 'border-dark-border' : 'border-gray-300'}`}
                 onError={() => setLogoPreview('/applogo.png')}
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-steel mb-2">Upload Logo</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Upload Logo</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleLogoUpload}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'}`}
               />
-              <p className="text-xs text-steel mt-2">Recommended: 200x200px, PNG or SVG, max 2MB</p>
+              <p className={`text-xs mt-2 ${isDark ? 'text-gray-400' : 'text-steel'}`}>Recommended: 200x200px, PNG or SVG, max 2MB</p>
               <input
                 type="text"
                 value={formData.logo}
@@ -233,7 +244,7 @@ const Settings: React.FC = () => {
                   handleChange('logo', e.target.value);
                   setLogoPreview(e.target.value);
                 }}
-                className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full mt-2 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="Or enter logo URL"
               />
             </div>
@@ -246,10 +257,10 @@ const Settings: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-primary-navy border-b pb-2 flex-1">Color Scheme</h2>
+            <h2 className={`text-xl font-bold border-b pb-2 flex-1 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Color Scheme</h2>
             <button
               type="button"
               onClick={resetColors}
@@ -259,23 +270,23 @@ const Settings: React.FC = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(formData.colors).map(([key, value]) => (
+            {Object.entries(formData.colors || settings.colors).map(([key, value]) => (
               <div key={key}>
-                <label className="block text-sm font-medium text-steel mb-2 capitalize">
+                <label className={`block text-sm font-medium mb-2 capitalize ${isDark ? 'text-gray-300' : 'text-steel'}`}>
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="color"
-                    value={value}
+                    value={/^#?[0-9A-Fa-f]{6}$/.test(String(value)) ? (String(value).startsWith('#') ? value : '#' + value) : '#0D2136'}
                     onChange={(e) => handleChange(`colors.${key}`, e.target.value)}
-                    className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
+                    className="w-16 h-10 border border-gray-300 dark:border-dark-border rounded cursor-pointer bg-transparent"
                   />
                   <input
                     type="text"
                     value={value}
                     onChange={(e) => handleChange(`colors.${key}`, e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                    className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                     placeholder="#000000"
                   />
                 </div>
@@ -290,37 +301,37 @@ const Settings: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">Contact Information</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Contact Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Email</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Email</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="contact@example.com"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Phone</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Phone</label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="+1 (555) 123-4567"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-steel mb-2">Address</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Address</label>
               <textarea
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="123 Main St, City, State, ZIP"
               />
             </div>
@@ -333,47 +344,47 @@ const Settings: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           data-aos="fade-up"
-          className="bg-white rounded-xl shadow-md p-6"
+          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className="text-xl font-bold text-primary-navy mb-4 border-b pb-2">System Preferences</h2>
+          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>System Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Default Unit</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Default Unit</label>
               <select
                 value={formData.defaultUnit}
                 onChange={(e) => handleChange('defaultUnit', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'}`}
               >
                 <option value="cm">Centimeters (cm)</option>
                 <option value="in">Inches (in)</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Currency</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Currency</label>
               <input
                 type="text"
                 value={formData.currency}
                 onChange={(e) => handleChange('currency', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="USD"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Timezone</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Timezone</label>
               <input
                 type="text"
                 value={formData.timezone}
                 onChange={(e) => handleChange('timezone', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'}`}
                 placeholder="UTC"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-steel mb-2">Date Format</label>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-steel'}`}>Date Format</label>
               <select
                 value={formData.dateFormat}
                 onChange={(e) => handleChange('dateFormat', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-gold"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-gold focus:outline-none ${isDark ? 'border-dark-border bg-dark-bg text-dark-text' : 'border-gray-300'}`}
               >
                 <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                 <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -392,15 +403,15 @@ const Settings: React.FC = () => {
         >
           <button
             type="button"
-            onClick={() => setFormData(settings)}
-            className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+            onClick={() => { setFormData(settings); setLogoPreview(settings.logo); setError(''); setSuccess(''); }}
+            className={`px-6 py-3 border rounded-lg transition-colors ${isDark ? 'border-dark-border text-gray-300 hover:bg-dark-border/50' : 'border-gray-300 hover:bg-gray-50'}`}
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 bg-primary-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
+            className="px-6 py-3 bg-primary-navy text-white rounded-lg hover:bg-primary-navy/90 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 transition-colors"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>

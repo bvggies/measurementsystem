@@ -8,6 +8,7 @@ const { query, transaction } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
 const { validateMeasurement } = require('../utils/validation');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
 
 // GET /api/measurements
 async function getMeasurements(req, res) {
@@ -275,6 +276,7 @@ async function createMeasurement(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') {
     return getMeasurements(req, res);
   } else if (req.method === 'POST') {

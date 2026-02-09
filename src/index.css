@@ -8,6 +8,17 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  /* Brand colors – defaults; overridden when Settings are loaded/saved */
+  --color-primary-navy: #0D2136;
+  --color-primary-gold: #D4A643;
+  --color-steel: #586577;
+  --color-soft-white: #FAFAFA;
+  --color-emerald: #00A68C;
+  --color-crimson: #E43F52;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -19,6 +30,26 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection color – brand accent (gold) */
+::selection {
+  background-color: rgba(212, 166, 67, 0.25);
+}
+.dark ::selection {
+  background-color: rgba(212, 166, 67, 0.35);
+}
+
+/* Card hover lift – use on clickable cards */
+.card-hover-lift {
+  @apply transition-all duration-200;
+}
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -4px rgba(0, 0, 0, 0.04);
+}
+.dark .card-hover-lift:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
 }
 
 /* Minimum touch target for primary nav/header on touch devices */

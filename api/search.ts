@@ -20,6 +20,16 @@ import { query } from '../src/utils/db';
 import { requireAuth } from '../src/utils/auth';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'OPTIONS') {
+    const r = res as any;
+    if (r.setHeader) {
+      r.setHeader('Access-Control-Allow-Origin', req.headers?.origin || '*');
+      r.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      r.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      r.setHeader('Access-Control-Max-Age', '86400');
+    }
+    return res.status(200).json({});
+  }
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

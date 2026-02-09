@@ -88,7 +88,7 @@ const GlobalSearch: React.FC = () => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder="Search customers, measurements, orders... (Ctrl+K)"
-          className={`w-full px-4 py-2 pl-10 pr-20 rounded-xl focus:ring-2 focus:ring-primary-gold focus:border-transparent focus-visible:outline-none ${
+          className={`w-full px-4 py-2 pl-10 pr-20 rounded-xl focus:ring-2 focus:ring-primary-gold focus:border-transparent focus-visible:outline-none transition-all duration-200 ${
             isDark ? 'border-dark-border bg-dark-bg text-dark-text placeholder-gray-500' : 'border-gray-300'
           }`}
         />
@@ -124,7 +124,7 @@ const GlobalSearch: React.FC = () => {
               <div
                 key={`${result.type}-${result.id}`}
                 onClick={() => handleResultClick(result)}
-                className={`px-4 py-3 cursor-pointer border-b last:border-b-0 ${
+                className={`px-4 py-3 cursor-pointer border-b last:border-b-0 transition-colors duration-150 ${
                   isDark ? 'hover:bg-dark-border/50 border-dark-border' : 'hover:bg-gray-50 border-gray-100'
                 }`}
               >

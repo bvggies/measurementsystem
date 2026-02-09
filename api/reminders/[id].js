@@ -2,8 +2,8 @@
  * PATCH /api/reminders/:id - Update reminder (mark sent, snooze, cancel)
  */
 
-const { query } = require('../../utils/db');
-const { requireAuth, requireRole } = require('../../utils/auth');
+const { query } = require('../utils/db');
+const { requireAuth, requireRole } = require('../utils/auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'PATCH' && req.method !== 'PUT') {

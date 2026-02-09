@@ -3,10 +3,11 @@
  * POST /api/measurements/approval - Approve or reject a measurement (admin/manager/tailor)
  */
 
-const { query, transaction } = require('../../utils/db');
-const { requireAuth, requireRole } = require('../../utils/auth');
-const { logAudit } = require('../../utils/audit');
-const { createNotification } = require('../../utils/notifications');
+const { query, transaction } = require('../utils/db');
+const { requireAuth, requireRole } = require('../utils/auth');
+const { logAudit } = require('../utils/audit');
+const { createNotification } = require('../utils/notifications');
+const { handleCors } = require('../utils/cors');
 
 async function getPending(req, res) {
   try {
@@ -112,6 +113,7 @@ async function decide(req, res) {
 }
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method === 'GET') return getPending(req, res);
   if (req.method === 'POST') return decide(req, res);
   return res.status(405).json({ error: 'Method not allowed' });

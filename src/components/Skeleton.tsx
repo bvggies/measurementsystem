@@ -10,7 +10,10 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   className = '',
   variant = 'rectangular',
 }) => {
-  const base = 'bg-gray-200 dark:bg-dark-border animate-pulse';
+  const base =
+    'overflow-hidden bg-[length:200%_100%] animate-shimmer ' +
+    'bg-[linear-gradient(90deg,#e5e7eb_0%,#d1d5db_50%,#e5e7eb_100%)] ' +
+    'dark:bg-[linear-gradient(90deg,#404040_0%,#525252_50%,#404040_100%)]';
   const variants = {
     text: 'rounded h-4',
     circular: 'rounded-full',

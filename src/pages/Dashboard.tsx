@@ -132,14 +132,14 @@ const Dashboard: React.FC = () => {
       <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6" variants={container}>
         {statCards.map((card) => (
           <motion.div key={card.title} variants={item}>
-            <Link to={card.link} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl">
-              <div className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} transition-all duration-200 cursor-pointer border border-transparent h-full`}>
+            <Link to={card.link} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl card-hover-lift">
+              <div className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} cursor-pointer border border-transparent h-full`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className={`text-xs sm:text-sm font-medium ${textSecondary} truncate`}>{card.title}</p>
                     <p className={`text-xl sm:text-3xl font-bold ${textPrimary} mt-1 sm:mt-2`}>{card.value}</p>
                   </div>
-                  <div className={`${card.color} w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-2xl flex-shrink-0 shadow-sm`}>
+                  <div className={`${card.color} w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-2xl flex-shrink-0 shadow-sm ring-2 ring-white/20 dark:ring-black/20`}>
                     {card.icon}
                   </div>
                 </div>
@@ -154,11 +154,10 @@ const Dashboard: React.FC = () => {
         <motion.div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4" variants={container}>
           {quickActions.map((action) => (
             <motion.div key={action.name} variants={item}>
-              <Link to={action.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl">
+              <Link to={action.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl card-hover-lift">
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} transition-shadow cursor-pointer text-center border border-transparent min-h-[88px] sm:min-h-0 flex flex-col items-center justify-center`}
+                  className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} cursor-pointer text-center border border-transparent min-h-[88px] sm:min-h-0 flex flex-col items-center justify-center`}
                 >
                   <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{action.icon}</div>
                   <p className={`font-medium text-sm sm:text-base ${textPrimary} line-clamp-2`}>{action.name}</p>

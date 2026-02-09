@@ -5,8 +5,10 @@
 const { query } = require('../utils/db');
 const { requireRole } = require('../utils/auth');
 const { logAudit } = require('../utils/audit');
+const { handleCors } = require('../utils/cors');
 
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

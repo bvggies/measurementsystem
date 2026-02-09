@@ -2,8 +2,8 @@
  * GET /api/measurements/compare?ids=id1,id2 - Side-by-side comparison of measurements
  */
 
-const { query } = require('../../utils/db');
-const { requireAuth } = require('../../utils/auth');
+const { query } = require('../utils/db');
+const { requireAuth } = require('../utils/auth');
 
 const FIELDS = [
   'entry_id', 'units', 'fit_preference',

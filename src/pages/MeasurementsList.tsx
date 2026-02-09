@@ -36,6 +36,45 @@ const MeasurementsList: React.FC = () => {
     unit: '',
     tailor: '',
   });
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllOnPage = () => {
+    if (selectedIds.size === measurements.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(measurements.map((m) => m.id)));
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} measurement(s)? This cannot be undone.`)) return;
+    let done = 0;
+    let failed = 0;
+    for (const id of Array.from(selectedIds)) {
+      try {
+        await axios.delete(`/api/measurements/${id}`);
+        done++;
+      } catch {
+        failed++;
+      }
+    }
+    setSelectedIds(new Set());
+    await fetchMeasurements();
+    if (failed > 0) toast(`${done} deleted, ${failed} failed`, 'error');
+    else toast(`${done} measurement(s) deleted`, 'success');
+  };
 
   const fetchMeasurements = useCallback(async () => {
     try {
@@ -63,6 +102,10 @@ const MeasurementsList: React.FC = () => {
     fetchMeasurements();
   }, [fetchMeasurements]);
 
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [page]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
@@ -76,7 +119,7 @@ const MeasurementsList: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-gray-200 dark:border-dark-border"
       >
         <h1 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>Measurements</h1>
         <div className="flex flex-wrap gap-2">
@@ -174,6 +217,31 @@ const MeasurementsList: React.FC = () => {
           />
         ) : (
           <>
+            {/* Bulk actions bar */}
+            {selectedIds.size > 0 && (
+              <div className={`flex flex-wrap items-center gap-3 px-4 py-3 border-b ${isDark ? 'bg-dark-border/30 border-dark-border' : 'bg-gray-100 border-gray-200'}`}>
+                <span className={`font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
+                  {selectedIds.size} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="text-sm text-steel hover:text-primary-navy dark:hover:text-primary-gold transition"
+                >
+                  Clear
+                </button>
+                {user?.role === 'admin' && (
+                  <button
+                    type="button"
+                    onClick={handleBulkDelete}
+                    className="text-sm px-3 py-1.5 rounded-lg bg-crimson text-white hover:bg-crimson/90 transition"
+                  >
+                    Delete selected
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Mobile: card list */}
             <div className="md:hidden space-y-3">
               {measurements.map((measurement, index) => (
@@ -183,9 +251,17 @@ const MeasurementsList: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
                   onClick={() => navigate(`/measurements/view/${measurement.id}`)}
-                  className={`${isDark ? 'bg-dark-bg border-dark-border hover:bg-dark-border/30' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-xl p-4 active:scale-[0.99] transition cursor-pointer`}
+                  className={`${isDark ? 'bg-dark-bg border-dark-border hover:bg-dark-border/30' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'} border rounded-xl p-4 active:scale-[0.99] transition cursor-pointer ${selectedIds.has(measurement.id) ? 'ring-2 ring-primary-gold' : ''}`}
                 >
                   <div className="flex items-start justify-between gap-2">
+                    <label className="flex items-center gap-2 shrink-0 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(measurement.id)}
+                        onChange={() => toggleOne(measurement.id)}
+                        className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold w-4 h-4"
+                      />
+                    </label>
                     <div className="min-w-0 flex-1">
                       <p className={`font-semibold text-sm truncate ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.customer_name || measurement.entry_id}
@@ -225,6 +301,17 @@ const MeasurementsList: React.FC = () => {
               <table className="w-full min-w-[640px]">
                 <thead className={isDark ? 'bg-dark-border/50' : 'bg-gray-50'}>
                   <tr>
+                    <th className="w-10 px-2 py-3">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={measurements.length > 0 && selectedIds.size === measurements.length}
+                          ref={(el) => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < measurements.length; }}
+                          onChange={selectAllOnPage}
+                          className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold w-4 h-4"
+                        />
+                      </label>
+                    </th>
                     <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Entry ID</th>
                     <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Customer</th>
                     <th className={`px-4 lg:px-6 py-3 text-left text-xs font-medium uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Phone</th>
@@ -241,13 +328,23 @@ const MeasurementsList: React.FC = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className={isDark ? 'hover:bg-dark-border/30' : 'hover:bg-gray-50'}
+                      className={`transition-colors duration-150 ${selectedIds.has(measurement.id) ? (isDark ? 'bg-dark-border/50' : 'bg-primary-gold/10') : ''} ${isDark ? 'hover:bg-dark-border/30' : 'hover:bg-gray-50'}`}
                       onClick={(e) => {
                         if ((e.target as HTMLElement).closest('a, button')) return;
                         navigate(`/measurements/view/${measurement.id}`);
                       }}
                       style={{ cursor: 'pointer' }}
                     >
+                      <td className="w-10 px-2 py-3" onClick={(e) => e.stopPropagation()}>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(measurement.id)}
+                            onChange={() => toggleOne(measurement.id)}
+                            className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold w-4 h-4"
+                          />
+                        </label>
+                      </td>
                       <td className={`px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium ${isDark ? 'text-dark-text' : 'text-gray-900'}`}>
                         {measurement.entry_id}
                       </td>
@@ -322,6 +419,7 @@ const MeasurementsList: React.FC = () => {
                                     } else if (err.message && typeof err.message === 'string') {
                                       errorMsg = err.message;
                                     }
+                                    if (errorMsg === '_t' || !errorMsg?.trim()) errorMsg = 'Failed to delete measurement';
                                     toast(errorMsg, 'error');
                                     console.error('Delete error:', err);
                                   }
