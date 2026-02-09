@@ -149,37 +149,37 @@ const MeasurementView: React.FC = () => {
   const measurementId = measurement.id ?? idFromUrl;
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-4 sm:space-y-6 pb-32 max-w-4xl mx-auto">
       {/* Print: small card only (hidden on screen, shown when printing) */}
       <div className="hidden print:block" data-print-root>
         <PrintMeasurement measurement={measurement} />
       </div>
 
-      {/* Header */}
+      {/* Header: stack on mobile, row on desktop; actions in grid on mobile */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
       >
-        <div>
-          <h1 className={`text-3xl font-bold transition-colors duration-200 ${
+        <div className="min-w-0">
+          <h1 className={`text-2xl sm:text-3xl font-bold transition-colors duration-200 truncate ${
             theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'
           }`}>Measurement Details</h1>
-          <p className={`mt-1 transition-colors duration-200 ${
+          <p className={`mt-1 text-sm sm:text-base transition-colors duration-200 truncate ${
             theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
           }`}>Entry ID: {measurement.entry_id}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-steel text-white rounded-lg hover:bg-opacity-90 transition"
+            className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 bg-steel text-white rounded-xl hover:bg-opacity-90 transition text-sm font-medium"
           >
-            🖨️ Print / Save as PDF
+            🖨️ Print
           </button>
           {(user?.role === 'admin' || user?.role === 'manager' || (user?.role === 'tailor' && measurement.created_by === user?.id)) && (
             <Link
               to={`/measurements/edit/${measurementId}`}
-              className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-opacity-90 transition"
+              className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 bg-primary-gold text-white rounded-xl hover:bg-opacity-90 transition text-sm font-medium"
             >
               ✏️ Edit
             </Link>
@@ -207,16 +207,16 @@ const MeasurementView: React.FC = () => {
                   }
                 }
               }}
-              className="px-4 py-2 bg-crimson text-white rounded-lg hover:bg-opacity-90 transition"
+              className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 bg-crimson text-white rounded-xl hover:bg-opacity-90 transition text-sm font-medium"
             >
               🗑️ Delete
             </button>
           )}
           <Link
             to="/measurements"
-            className="px-4 py-2 border border-steel text-steel rounded-lg hover:bg-soft-white transition"
+            className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 border border-steel text-steel rounded-xl hover:bg-soft-white dark:border-dark-border dark:text-gray-300 dark:hover:bg-dark-border/50 transition text-sm font-medium col-span-2 sm:col-span-1"
           >
-            ← Back
+            ← Back to list
           </Link>
         </div>
       </motion.div>
@@ -226,16 +226,16 @@ const MeasurementView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
           theme === 'dark' 
             ? 'text-dark-text border-dark-border' 
             : 'text-primary-navy border-steel-light'
         }`}>Customer Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <p className={`text-sm transition-colors duration-200 ${
               theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
@@ -277,18 +277,18 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
           theme === 'dark' 
             ? 'text-dark-text border-dark-border' 
             : 'text-primary-navy border-steel-light'
         }`}>
           Top Measurements ({measurement.units})
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <div>
             <p className={`text-sm transition-colors duration-200 ${
               theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
@@ -354,18 +354,18 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
           theme === 'dark' 
             ? 'text-dark-text border-dark-border' 
             : 'text-primary-navy border-steel-light'
         }`}>
           Trouser Measurements ({measurement.units})
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <div>
             <p className={`text-sm transition-colors duration-200 ${
               theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
@@ -416,11 +416,11 @@ const MeasurementView: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           data-aos="fade-up"
-          className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+          className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
             theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
           }`}
         >
-          <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+          <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
             theme === 'dark' 
               ? 'text-dark-text border-dark-border' 
               : 'text-primary-navy border-steel-light'
@@ -437,11 +437,11 @@ const MeasurementView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-soft-white'
         }`}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 text-sm">
           <div>
             <p className={`transition-colors duration-200 ${
               theme === 'dark' ? 'text-dark-text-secondary' : 'text-steel'
@@ -498,11 +498,11 @@ const MeasurementView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
           theme === 'dark'
             ? 'text-dark-text border-dark-border'
             : 'text-primary-navy border-steel-light'
@@ -517,11 +517,11 @@ const MeasurementView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className={`rounded-xl shadow-md p-6 transition-colors duration-200 ${
+        className={`rounded-xl shadow-md p-4 sm:p-6 transition-colors duration-200 ${
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 transition-colors duration-200 ${
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 transition-colors duration-200 ${
           theme === 'dark'
             ? 'text-dark-text border-dark-border'
             : 'text-primary-navy border-steel-light'

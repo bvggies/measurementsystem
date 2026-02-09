@@ -39,7 +39,7 @@ const CustomerView: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get(`/api/customers/${id}`);
+      const response = await axios.get(`/api/get-customer?id=${encodeURIComponent(id)}`);
       if (response.data) {
         setCustomer(response.data);
       } else {
@@ -126,22 +126,28 @@ const CustomerView: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-4 sm:space-y-6 pb-32 max-w-4xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6"
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
-        <h1 className={`text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Customer Details</h1>
-        <div className="flex gap-2">
+        <h1 className={`text-2xl sm:text-3xl font-bold truncate ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>Customer Details</h1>
+        <div className="flex flex-wrap gap-2">
           {(user?.role === 'admin' || user?.role === 'manager') && (
             <Link
               to={`/customers/edit/${customer.id}`}
-              className="px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-primary-gold-dark transition-colors"
+              className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 bg-primary-gold text-white rounded-xl hover:bg-primary-gold/90 transition-colors text-sm font-medium"
             >
               ✏️ Edit
             </Link>
           )}
+          <Link
+            to="/customers"
+            className="min-h-[44px] sm:min-h-0 flex items-center justify-center px-4 py-2.5 border border-steel text-steel rounded-xl hover:bg-soft-white dark:border-dark-border dark:text-gray-300 dark:hover:bg-dark-border/50 transition text-sm font-medium"
+          >
+            ← Back
+          </Link>
         </div>
       </motion.div>
 
@@ -150,10 +156,10 @@ const CustomerView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
+        className={`rounded-xl shadow-md p-4 sm:p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
       >
-        <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Customer Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Customer Information</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-steel'}`}>Name:</p>
             <p className={`font-medium text-lg ${isDark ? 'text-dark-text' : 'text-primary-navy'}`}>{customer.name || 'N/A'}</p>
@@ -187,15 +193,15 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
+          className={`rounded-xl shadow-md p-4 sm:p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Recent Measurements</h2>
+          <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Recent Measurements</h2>
           <div className="space-y-2">
             {customer.measurements.map((measurement: any) => (
               <Link
                 key={measurement.id}
                 to={`/measurements/view/${measurement.id}`}
-                className={`block p-4 border rounded-lg transition ${isDark ? 'border-dark-border hover:bg-dark-border/30' : 'border-steel-light hover:bg-soft-white'}`}
+                className={`block p-3 sm:p-4 border rounded-xl min-h-[44px] flex items-center transition ${isDark ? 'border-dark-border hover:bg-dark-border/30' : 'border-steel-light hover:bg-soft-white'}`}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -218,9 +224,9 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
+          className={`rounded-xl shadow-md p-4 sm:p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Measurement profiles</h2>
+          <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Measurement profiles</h2>
           {profilesLoading ? (
             <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold" /></div>
           ) : profiles.length === 0 && !showProfileForm ? (
@@ -282,14 +288,14 @@ const CustomerView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           data-aos="fade-up"
-          className={`rounded-xl shadow-md p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
+          className={`rounded-xl shadow-md p-4 sm:p-6 border ${isDark ? 'bg-dark-surface border-dark-border' : 'bg-white border-gray-200'}`}
         >
-          <h2 className={`text-xl font-bold mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Upcoming Fittings</h2>
+          <h2 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 border-b pb-2 ${isDark ? 'text-dark-text border-dark-border' : 'text-primary-navy border-steel-light'}`}>Upcoming Fittings</h2>
           <div className="space-y-2">
             {customer.fittings.map((fitting: any) => (
               <div
                 key={fitting.id}
-                className={`p-4 border rounded-lg ${isDark ? 'border-dark-border' : 'border-steel-light'}`}
+                className={`p-3 sm:p-4 border rounded-xl ${isDark ? 'border-dark-border' : 'border-steel-light'}`}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -322,7 +328,7 @@ const CustomerView: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         data-aos="fade-up"
-        className={`rounded-xl shadow-md p-6 text-sm border ${isDark ? 'bg-dark-surface border-dark-border text-gray-400' : 'bg-white border-gray-200 text-steel'}`}
+        className={`rounded-xl shadow-md p-4 sm:p-6 text-sm border ${isDark ? 'bg-dark-surface border-dark-border text-gray-400' : 'bg-white border-gray-200 text-steel'}`}
       >
         <p><strong>Created:</strong> {format(new Date(customer.created_at), 'MMM dd, yyyy HH:mm')}</p>
         {customer.updated_at && (

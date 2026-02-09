@@ -4,6 +4,7 @@
 
 const { query } = require('../utils/db');
 const { requireAuth } = require('../utils/auth');
+const { handleCors } = require('../utils/cors');
 
 const FIELDS = [
   'entry_id', 'units', 'fit_preference',
@@ -12,19 +13,28 @@ const FIELDS = [
   'additional_info', 'created_at', 'updated_at', 'version'
 ];
 
+function toPlainValue(v) {
+  if (v == null) return v;
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === 'bigint') return String(v);
+  return v;
+}
+
 module.exports = async (req, res) => {
+  if (handleCors(req, res)) return;
+  res.setHeader('Content-Type', 'application/json');
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).end(JSON.stringify({ error: 'Method not allowed' }));
   }
   try {
     requireAuth(req);
     const idsParam = req.query?.ids || req.query?.id;
     if (!idsParam) {
-      return res.status(400).json({ error: 'Query parameter ids required (e.g. ids=uuid1,uuid2)' });
+      return res.status(400).end(JSON.stringify({ error: 'Query parameter ids required (e.g. ids=uuid1,uuid2)' }));
     }
     const ids = (typeof idsParam === 'string' ? idsParam.split(',') : [idsParam]).map((s) => s.trim()).filter(Boolean);
     if (ids.length < 2 || ids.length > 5) {
-      return res.status(400).json({ error: 'Provide between 2 and 5 measurement ids' });
+      return res.status(400).end(JSON.stringify({ error: 'Provide between 2 and 5 measurement ids' }));
     }
 
     const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
@@ -40,13 +50,13 @@ module.exports = async (req, res) => {
     );
 
     if (rows.length !== ids.length) {
-      return res.status(404).json({ error: 'One or more measurements not found' });
+      return res.status(404).end(JSON.stringify({ error: 'One or more measurements not found' }));
     }
 
     const comparison = rows.map((r) => {
       const row = {};
       FIELDS.forEach((f) => {
-        if (r[f] !== undefined) row[f] = r[f];
+        if (r[f] !== undefined) row[f] = toPlainValue(r[f]);
       });
       row.id = r.id;
       row.customer_name = r.customer_name;
@@ -55,12 +65,12 @@ module.exports = async (req, res) => {
       return row;
     });
 
-    return res.status(200).json({ comparison });
+    return res.status(200).end(JSON.stringify({ comparison }));
   } catch (error) {
     if (error.message === 'Authentication required' || error.message === 'Invalid or expired token') {
-      return res.status(401).json({ error: error.message });
+      return res.status(401).end(JSON.stringify({ error: error.message }));
     }
     console.error('Compare measurements error:', error);
-    return res.status(500).json({ error: 'Internal server error', message: error.message });
+    return res.status(500).end(JSON.stringify({ error: 'Internal server error', message: error.message }));
   }
 };

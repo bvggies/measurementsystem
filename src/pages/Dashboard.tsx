@@ -29,14 +29,21 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
   },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0 },
 };
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -69,43 +76,43 @@ const Dashboard: React.FC = () => {
   };
 
   const statCards = [
-    { title: 'Total Customers', value: stats?.totalCustomers ?? 0, icon: '👥', color: 'bg-primary-navy', link: '/customers' },
-    { title: 'Total Measurements', value: stats?.totalMeasurements ?? 0, icon: '📏', color: 'bg-emerald', link: '/measurements' },
-    { title: 'New Entries (30d)', value: stats?.newEntries ?? 0, icon: '✨', color: 'bg-primary-gold', link: '/measurements' },
-    { title: 'Pending Fittings', value: stats?.pendingFittings ?? 0, icon: '📅', color: 'bg-steel', link: '/calendar' },
+    { title: 'Customers', value: stats?.totalCustomers ?? 0, icon: '👥', accent: 'primary-navy', link: '/customers' },
+    { title: 'Measurements', value: stats?.totalMeasurements ?? 0, icon: '📏', accent: 'emerald', link: '/measurements' },
+    { title: 'New (30d)', value: stats?.newEntries ?? 0, icon: '✨', accent: 'primary-gold', link: '/measurements' },
+    { title: 'Pending fittings', value: stats?.pendingFittings ?? 0, icon: '📅', accent: 'steel', link: '/calendar' },
   ];
 
   const quickActions = [
     { name: 'New Measurement', href: '/measurements/new', icon: '➕', roles: ['admin', 'tailor'] },
     { name: 'Import Data', href: '/import', icon: '📥', roles: ['admin'] },
-    { name: 'View Calendar', href: '/calendar', icon: '📅', roles: ['admin', 'tailor'] },
-    { name: 'Manage Orders', href: '/orders', icon: '📦', roles: ['admin', 'tailor'] },
+    { name: 'Calendar', href: '/calendar', icon: '📅', roles: ['admin', 'tailor'] },
+    { name: 'Orders', href: '/orders', icon: '📦', roles: ['admin', 'tailor'] },
   ].filter((action) => user && action.roles.includes(user.role));
 
-  const cardBg = isDark ? 'bg-dark-surface border border-dark-border' : 'bg-white shadow-md';
-  const cardHover = isDark ? 'hover:border-primary-gold/50' : 'hover:shadow-lg';
+  const cardBg = isDark ? 'bg-dark-surface' : 'bg-white';
+  const cardBorder = isDark ? 'border border-dark-border' : 'border border-gray-200/80';
   const textPrimary = isDark ? 'text-dark-text' : 'text-gray-900';
-  const textSecondary = isDark ? 'text-gray-400' : 'text-gray-600';
+  const textMuted = isDark ? 'text-gray-400' : 'text-gray-500';
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto" id="main-content">
+      <div className="space-y-6 sm:space-y-8 max-w-6xl mx-auto" id="main-content">
         <div>
-          <div className="h-8 sm:h-9 w-40 sm:w-48 bg-gray-200 dark:bg-dark-border rounded animate-pulse mb-2" />
-          <div className="h-4 sm:h-5 w-56 sm:w-64 bg-gray-200 dark:bg-dark-border rounded animate-pulse" />
+          <div className="h-8 w-32 bg-gray-200 dark:bg-dark-border rounded-lg animate-pulse mb-2" />
+          <div className="h-4 w-48 bg-gray-200 dark:bg-dark-border rounded animate-pulse" />
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
         <div>
-          <div className="h-7 sm:h-8 w-36 sm:w-40 bg-gray-200 dark:bg-dark-border rounded animate-pulse mb-3 sm:mb-4" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="h-6 w-28 bg-gray-200 dark:bg-dark-border rounded animate-pulse mb-4" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className={`${cardBg} rounded-xl p-6 ${cardHover}`}>
-                <div className="h-12 w-12 rounded-lg bg-gray-200 dark:bg-dark-border animate-pulse mx-auto mb-3" />
-                <div className="h-5 w-24 bg-gray-200 dark:bg-dark-border rounded animate-pulse mx-auto" />
+              <div key={i} className={`${cardBg} ${cardBorder} rounded-2xl p-6`}>
+                <div className="h-12 w-12 rounded-xl bg-gray-200 dark:bg-dark-border animate-pulse mb-3" />
+                <div className="h-4 w-20 bg-gray-200 dark:bg-dark-border rounded animate-pulse" />
               </div>
             ))}
           </div>
@@ -116,30 +123,61 @@ const Dashboard: React.FC = () => {
 
   return (
     <motion.div
-      className="space-y-6 sm:space-y-8 max-w-7xl mx-auto"
+      className="space-y-8 sm:space-y-10 max-w-6xl mx-auto"
       id="main-content"
       initial="hidden"
       animate="show"
       variants={container}
     >
-      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <h1 className={`text-2xl sm:text-3xl font-bold ${textPrimary}`}>Dashboard</h1>
-          <p className={`${textSecondary} mt-0.5 sm:mt-1 text-sm sm:text-base`}>Welcome back, {user?.name}!</p>
+      {/* Welcome strip */}
+      <motion.div
+        variants={item}
+        className={`relative rounded-2xl overflow-hidden ${isDark ? 'bg-gradient-to-br from-primary-navy/90 to-dark-surface' : 'bg-gradient-to-br from-primary-navy to-primary-navy/95'}`}
+      >
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(212,166,67,0.3) 0%, transparent 50%)' }} />
+        <div className="relative px-5 sm:px-8 py-6 sm:py-8">
+          <div className="h-0.5 w-12 rounded-full bg-primary-gold mb-5" aria-hidden />
+          <h1 className={`text-2xl sm:text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-white'}`}>
+            {getGreeting()}, {user?.name?.split(' ')[0] || user?.name || 'there'}
+          </h1>
+          <p className={`mt-1 text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-white/80'}`}>
+            Here’s what’s happening with your measurements and fittings.
+          </p>
         </div>
       </motion.div>
 
-      <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6" variants={container}>
+      {/* Stat cards */}
+      <motion.div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" variants={container}>
         {statCards.map((card) => (
           <motion.div key={card.title} variants={item}>
-            <Link to={card.link} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl card-hover-lift">
-              <div className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} cursor-pointer border border-transparent h-full`}>
+            <Link
+              to={card.link}
+              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-dark-bg rounded-2xl"
+            >
+              <div
+                className={`${cardBg} ${cardBorder} rounded-2xl p-5 sm:p-6 h-full transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 min-h-[120px] sm:min-h-0 flex flex-col`}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className={`text-xs sm:text-sm font-medium ${textSecondary} truncate`}>{card.title}</p>
-                    <p className={`text-xl sm:text-3xl font-bold ${textPrimary} mt-1 sm:mt-2`}>{card.value}</p>
+                    <p className={`text-xs sm:text-sm font-medium uppercase tracking-wider ${textMuted}`}>
+                      {card.title}
+                    </p>
+                    <p className={`text-2xl sm:text-3xl font-bold tabular-nums mt-1 ${textPrimary}`}>
+                      {card.value.toLocaleString()}
+                    </p>
                   </div>
-                  <div className={`${card.color} w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-2xl flex-shrink-0 shadow-sm ring-2 ring-white/20 dark:ring-black/20`}>
+                  <div
+                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl flex-shrink-0 bg-${card.accent}/10 border border-${card.accent}/20`}
+                    style={
+                      card.accent === 'primary-navy'
+                        ? { backgroundColor: 'rgba(13, 33, 54, 0.12)', borderColor: 'rgba(13, 33, 54, 0.25)' }
+                        : card.accent === 'primary-gold'
+                        ? { backgroundColor: 'rgba(212, 166, 67, 0.15)', borderColor: 'rgba(212, 166, 67, 0.3)' }
+                        : card.accent === 'emerald'
+                        ? { backgroundColor: 'rgba(0, 166, 140, 0.12)', borderColor: 'rgba(0, 166, 140, 0.25)' }
+                        : { backgroundColor: 'rgba(88, 101, 119, 0.12)', borderColor: 'rgba(88, 101, 119, 0.25)' }
+                    }
+                  >
                     {card.icon}
                   </div>
                 </div>
@@ -149,72 +187,108 @@ const Dashboard: React.FC = () => {
         ))}
       </motion.div>
 
+      {/* Quick actions */}
       <motion.div variants={item}>
-        <h2 className={`text-lg sm:text-2xl font-bold ${textPrimary} mb-3 sm:mb-4`}>Quick Actions</h2>
-        <motion.div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4" variants={container}>
+        <h2 className={`text-lg font-semibold ${textPrimary} mb-3 sm:mb-4`}>Quick actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {quickActions.map((action) => (
             <motion.div key={action.name} variants={item}>
-              <Link to={action.href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-xl card-hover-lift">
+              <Link
+                to={action.href}
+                className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold focus-visible:ring-offset-2 rounded-2xl"
+              >
                 <motion.div
                   whileTap={{ scale: 0.98 }}
-                  className={`${cardBg} rounded-xl p-4 sm:p-6 ${cardHover} cursor-pointer text-center border border-transparent min-h-[88px] sm:min-h-0 flex flex-col items-center justify-center`}
+                  className={`${cardBg} ${cardBorder} rounded-2xl p-4 sm:p-5 cursor-pointer text-center transition-all duration-200 hover:shadow-md hover:border-primary-gold/40 min-h-[100px] sm:min-h-[110px] flex flex-col items-center justify-center gap-2`}
                 >
-                  <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{action.icon}</div>
-                  <p className={`font-medium text-sm sm:text-base ${textPrimary} line-clamp-2`}>{action.name}</p>
+                  <span className="text-3xl sm:text-4xl" aria-hidden>{action.icon}</span>
+                  <span className={`font-medium text-sm sm:text-base ${textPrimary} line-clamp-2`}>
+                    {action.name}
+                  </span>
                 </motion.div>
               </Link>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </motion.div>
 
-      <motion.div
-        variants={item}
-        className={`${cardBg} rounded-xl p-4 sm:p-6 border border-transparent`}
-      >
-        <h2 className={`text-lg sm:text-2xl font-bold ${textPrimary} mb-2 sm:mb-4`}>Recent Activity</h2>
-        <p className={`${textSecondary} text-sm sm:text-base`}>
-          {stats?.recentActivity ?? 0} new measurements in the last 7 days
-        </p>
-      </motion.div>
-
-      {showInsights && (stats?.tailorStats?.length || stats?.customerGrowth || stats?.measurementTrends) && (
-        <motion.div variants={item} className="space-y-4 sm:space-y-6">
-          <h2 className={`text-lg sm:text-2xl font-bold ${textPrimary}`}>Insights</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {stats.customerGrowth && (
-              <div className={`${cardBg} rounded-xl p-4 sm:p-6 border border-transparent`}>
-                <h3 className={`font-bold text-sm sm:text-base ${textPrimary} mb-2`}>Customer growth (30d)</h3>
-                <p className={textSecondary}>
-                  New: {stats.customerGrowth.newCustomersLast30Days} · Returning with measurements: {stats.customerGrowth.returningCustomersWithMeasurements}
-                </p>
-              </div>
-            )}
-            {stats.measurementTrends && (stats.measurementTrends.avg_chest != null || stats.measurementTrends.avg_waist != null || stats.measurementTrends.avg_neck != null) && (
-              <div className={`${cardBg} rounded-xl p-4 sm:p-6 border border-transparent`}>
-                <h3 className={`font-bold text-sm sm:text-base ${textPrimary} mb-2`}>Avg measurements (30d)</h3>
-                <p className={textSecondary}>
-                  {stats.measurementTrends.avg_chest != null && `Chest: ${Number(stats.measurementTrends.avg_chest).toFixed(1)} · `}
-                  {stats.measurementTrends.avg_waist != null && `Waist: ${Number(stats.measurementTrends.avg_waist).toFixed(1)} · `}
-                  {stats.measurementTrends.avg_neck != null && `Neck: ${Number(stats.measurementTrends.avg_neck).toFixed(1)}`}
-                </p>
-              </div>
-            )}
-            {stats.tailorStats && stats.tailorStats.length > 0 && (
-              <div className={`${cardBg} rounded-xl p-4 sm:p-6 border border-transparent sm:col-span-2`}>
-                <h3 className={`font-bold text-sm sm:text-base ${textPrimary} mb-2`}>Tailor activity</h3>
-                <ul className="space-y-1 text-sm">
-                  {stats.tailorStats.slice(0, 5).map((t) => (
-                    <li key={t.id} className={textSecondary}>
-                      {t.name}: {t.measurements_count} measurements, {t.updates_count} updates
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      {/* Recent activity + Insights */}
+      <div className={`grid gap-6 sm:gap-8 ${showInsights && (stats?.tailorStats?.length || stats?.customerGrowth || stats?.measurementTrends) ? 'lg:grid-cols-3' : ''}`}>
+        <motion.div variants={item} className={showInsights && (stats?.tailorStats?.length || stats?.customerGrowth || stats?.measurementTrends) ? 'lg:col-span-2' : ''}>
+          <div className={`${cardBg} ${cardBorder} rounded-2xl p-5 sm:p-6 h-full`}>
+            <h2 className={`text-lg font-semibold ${textPrimary} mb-1`}>Recent activity</h2>
+            <p className={`text-sm ${textMuted} mb-4`}>Last 7 days</p>
+            <div className="flex items-baseline gap-2">
+              <span className={`text-4xl sm:text-5xl font-bold tabular-nums ${textPrimary}`}>
+                {stats?.recentActivity ?? 0}
+              </span>
+              <span className={`text-sm ${textMuted}`}>new measurements</span>
+            </div>
+            <div className="mt-4 h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-dark-border">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${Math.min(100, (stats?.recentActivity ?? 0) * 12)}%`,
+                }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="h-full rounded-full bg-primary-gold"
+              />
+            </div>
           </div>
         </motion.div>
-      )}
+
+        {showInsights && (stats?.tailorStats?.length || stats?.customerGrowth || stats?.measurementTrends) && (
+          <motion.div variants={item} className="space-y-4">
+            <h2 className={`text-lg font-semibold ${textPrimary}`}>Insights</h2>
+            <div className="space-y-4">
+              {stats.customerGrowth && (
+                <div className={`${cardBg} ${cardBorder} rounded-2xl p-4 sm:p-5 border-l-4 border-emerald`}>
+                  <h3 className={`font-semibold text-sm ${textPrimary} mb-1`}>Customer growth (30d)</h3>
+                  <p className={`text-sm ${textMuted}`}>
+                    <span className="font-medium text-emerald">{stats.customerGrowth.newCustomersLast30Days}</span> new
+                    · <span className="font-medium">{stats.customerGrowth.returningCustomersWithMeasurements}</span> returning with measurements
+                  </p>
+                </div>
+              )}
+              {stats.measurementTrends &&
+                (stats.measurementTrends.avg_chest != null ||
+                  stats.measurementTrends.avg_waist != null ||
+                  stats.measurementTrends.avg_neck != null) && (
+                  <div className={`${cardBg} ${cardBorder} rounded-2xl p-4 sm:p-5 border-l-4 border-primary-gold`}>
+                    <h3 className={`font-semibold text-sm ${textPrimary} mb-1`}>Avg measurements (30d)</h3>
+                    <p className={`text-sm ${textMuted}`}>
+                      {stats.measurementTrends.avg_chest != null && (
+                        <span>Chest {Number(stats.measurementTrends.avg_chest).toFixed(1)}</span>
+                      )}
+                      {stats.measurementTrends.avg_chest != null && stats.measurementTrends.avg_waist != null && ' · '}
+                      {stats.measurementTrends.avg_waist != null && (
+                        <span>Waist {Number(stats.measurementTrends.avg_waist).toFixed(1)}</span>
+                      )}
+                      {(stats.measurementTrends.avg_chest != null || stats.measurementTrends.avg_waist != null) &&
+                        stats.measurementTrends.avg_neck != null &&
+                        ' · '}
+                      {stats.measurementTrends.avg_neck != null && (
+                        <span>Neck {Number(stats.measurementTrends.avg_neck).toFixed(1)}</span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              {stats.tailorStats && stats.tailorStats.length > 0 && (
+                <div className={`${cardBg} ${cardBorder} rounded-2xl p-4 sm:p-5 border-l-4 border-primary-navy dark:border-primary-gold`}>
+                  <h3 className={`font-semibold text-sm ${textPrimary} mb-2`}>Tailor activity</h3>
+                  <ul className="space-y-1.5 text-sm">
+                    {stats.tailorStats.slice(0, 5).map((t) => (
+                      <li key={t.id} className={textMuted}>
+                        <span className={textPrimary}>{t.name}</span>: {t.measurements_count} measurements, {t.updates_count} updates
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </div>
     </motion.div>
   );
 };

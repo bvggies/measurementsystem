@@ -69,8 +69,8 @@ const Layout: React.FC = () => {
           theme === 'dark' ? 'bg-dark-surface' : 'bg-white'
         }`}
       >
-        <div className="flex flex-col h-full">
-          <div className={`flex items-center justify-between p-4 border-b ${theme === 'dark' ? 'border-dark-border' : 'border-gray-200'}`}>
+        <div className="flex flex-col h-full min-h-0">
+          <div className={`flex items-center justify-between p-4 border-b shrink-0 ${theme === 'dark' ? 'border-dark-border' : 'border-gray-200'}`}>
             <div className="flex items-center space-x-2">
               <img src={appLogo} alt={appName} className="h-8 w-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/applogo.png'; }} />
               <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-dark-text' : 'text-primary-navy'}`}>{appName}</h1>
@@ -82,7 +82,7 @@ const Layout: React.FC = () => {
               ✕
             </button>
           </div>
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 space-y-2 overscroll-contain">
             {navigation.map((item) => (
               <Link
                 key={item.name}
