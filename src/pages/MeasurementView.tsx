@@ -32,10 +32,23 @@ const MeasurementView: React.FC = () => {
     setMeasurement(null);
     try {
       const response = await axios.get(`/api/measurements/${id}`);
-      const body = response?.data;
+      let body = response?.data;
 
-      if (!body || typeof body !== 'object') {
-        setError('Invalid response from server');
+      if (body != null && typeof body === 'string') {
+        if (body.trim().startsWith('<')) {
+          setError('Server returned a page instead of data. The measurement API may not be deployed correctly.');
+          return;
+        }
+        try {
+          body = JSON.parse(body);
+        } catch (_) {
+          setError('Invalid response format from server');
+          return;
+        }
+      }
+
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        setError(response?.status === 200 ? 'Server returned no data. Try again or check the measurement ID.' : 'Invalid response from server');
         return;
       }
 

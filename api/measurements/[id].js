@@ -108,7 +108,9 @@ async function getMeasurement(req, res) {
 
     const data = toPlainMeasurement(row);
     res.setHeader('Content-Type', 'application/json');
-    return res.status(200).json({ success: true, data });
+    res.status(200);
+    res.end(JSON.stringify({ success: true, data }));
+    return;
   } catch (error) {
     console.error('Get measurement error:', error);
     res.setHeader('Content-Type', 'application/json');
